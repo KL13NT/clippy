@@ -13,7 +13,11 @@ const {
   nativeImage,
 } = require("electron");
 
-const { CLIPBOARD_EVENT, CLIPBOARD_CLEAR } = require("./constants");
+const {
+  CLIPBOARD_EVENT,
+  CLIPBOARD_CLEAR,
+  MESSAGE_CONFIRM_COPY_LINK,
+} = require("./constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
@@ -107,7 +111,8 @@ const handleIPCCopy = (ev, { type, value }) => {
 
 const externalLinkHandler = (e, url) => {
   e.preventDefault();
-  shell.openExternal(url);
+
+  if (confirm(MESSAGE_CONFIRM_COPY_LINK)) shell.openExternal(url);
 };
 
 const preventNavigation = (e) => {

@@ -7,7 +7,6 @@ const linkifyHTML = require("linkifyjs/html");
 const {
   MESSAGE_CLEAR_BACKEND,
   MESSAGE_CONFIRM_REMOVE,
-  MESSAGE_CONFIRM_COPY_LINK,
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
 } = require("./constants");
@@ -86,12 +85,10 @@ class App extends Preact.Component {
 
     if (target.tagName.toLowerCase() === "a") {
       // Handles embedded links inside copied text
-      if (confirm(MESSAGE_CONFIRM_COPY_LINK)) {
-        ipcRenderer.send(CLIPBOARD_EVENT, {
-          type: "text",
-          value: target.getAttribute("href"),
-        });
-      }
+      ipcRenderer.send(CLIPBOARD_EVENT, {
+        type: "text",
+        value: target.getAttribute("href"),
+      });
     } else {
       const { value, type } = currentTarget.dataset;
 
