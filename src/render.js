@@ -83,13 +83,8 @@ class App extends Preact.Component {
   copy = (e) => {
     const { target, currentTarget } = e;
 
-    if (target.tagName.toLowerCase() === "a") {
-      // Handles embedded links inside copied text
-      ipcRenderer.send(CLIPBOARD_EVENT, {
-        type: "text",
-        value: target.getAttribute("href"),
-      });
-    } else {
+    if (target.tagName.toLowerCase() !== "a") {
+      // Make sure to not copy links and leave their handling to the backend
       const { value, type } = currentTarget.dataset;
 
       ipcRenderer.send(CLIPBOARD_EVENT, { value, type });

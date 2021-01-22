@@ -112,7 +112,19 @@ const handleIPCCopy = (ev, { type, value }) => {
 const externalLinkHandler = (e, url) => {
   e.preventDefault();
 
-  if (confirm(MESSAGE_CONFIRM_COPY_LINK)) shell.openExternal(url);
+  const choice = dialog.showMessageBoxSync(mainWindow, {
+    type: "question",
+    buttons: ["Copy", "Open", "Copy and Open"],
+    title: "Link Action",
+    message: "What do you wish to do with this link?",
+  });
+
+  if (choice === 0) clipboard.writeText(url);
+  else if (choice === 1) shell.openExternal(url);
+  else {
+    clipboard.writeText(url);
+    shell.openExternal(url);
+  }
 };
 
 const preventNavigation = (e) => {
