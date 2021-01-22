@@ -82,7 +82,11 @@ const pingClipboardChanges = () => {
   const getVal = (type, clip) =>
     type === "image" ? clip.readImage().toDataURL() : clip.readText();
 
-  setInterval(() => {
+  const pinging = setInterval(() => {
+    if (mainWindow.isDestroyed()) {
+      return clearInterval(pinging);
+    }
+
     const formats = clipboard.availableFormats();
     const joined = formats.join(",");
     const isImage = /image/.test(joined);
