@@ -83,11 +83,13 @@ const pingClipboardChanges = () => {
     const joined = formats.join(",");
     const isImage = /image/.test(joined);
     const type = isImage ? "image" : "text";
-    const val = getVal(type, clipboard);
+    const value = getVal(type, clipboard);
 
-    if (val) mainWindow.webContents.send(CLIPBOARD_EVENT, type, val);
-
-    prev = val;
+    if (value)
+      mainWindow.webContents.send(CLIPBOARD_EVENT, {
+        type,
+        value,
+      });
   }, 1000);
 };
 
@@ -97,10 +99,10 @@ const pingClipboardChanges = () => {
  * @param {string} type
  * @param {string} val
  */
-const handleIPCCopy = (ev, type, val) => {
+const handleIPCCopy = (ev, { type, value }) => {
   if (type === "image")
-    clipboard.writeImage(nativeImage.createFromDataURL(val));
-  else clipboard.writeText(val);
+    clipboard.writeImage(nativeImage.createFromDataURL(value));
+  else clipboard.writeText(value);
 };
 
 const externalLinkHandler = (e, url) => {

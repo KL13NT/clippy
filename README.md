@@ -14,11 +14,14 @@ This project is *minimal*. Features include:
 
 - Click to copy back
 - Right Click to delete from log
-- Clear log
+- Clear log (can clear system's clipboard as well)
+- Clear system's clipboard only (history untouched)
 - Copy images
+- Open links embedded in copied text
+- Copy links embedded in copied text
 
-Yeah.. just those lol 😂 I may add export and link rendering later on, the
-groundwork is almost done so... _maybe_. 🤷
+Yeah.. just those lol 😂 ~~I may add export and link rendering later on, the
+groundwork is almost done so... _maybe_. 🤷~~ Added link rendering!
 
 ## Getting Started
 
