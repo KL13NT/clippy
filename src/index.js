@@ -151,7 +151,7 @@ const createWindow = () => {
       },
     });
 
-    mainWindow.removeMenu();
+    mainWindow.setAutoHideMenuBar(true);
 
     mainWindow.loadFile(path.join(__dirname, "index.html"));
 
