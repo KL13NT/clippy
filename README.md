@@ -1,11 +1,13 @@
 # Clippy! 🚀
 Clippy is a minimal clipboard history log made with
-[Electron](https://electronjs.org), [Preact](https//preactjs.com), and
+[Electron](https://electronjs.org), [Preact](https://preactjs.com), and
 [htm](https://github.com/developit/htm). It doesn't store nor sync your
 clipboard. I can't showcase how badly I needed a clipboard log. I
 needed one to the point of building one.
 
-Some of my projects are available on my [projects page](https://iamnabil.netlify.app).
+> I wrote this code in a couple hours and this was my first time using Electron, don't @ me 😂
+
+> Some of my projects are available on my [projects page](https://iamnabil.netlify.app/projects).
 
 ## Features
 This project is *minimal*. Features include:

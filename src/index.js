@@ -55,14 +55,25 @@ const minimize = (e) => {
   });
 };
 
-const maximize = (e) => {
-  mainWindow.maximize();
+/**
+ * Shows and gives focus to the window on tray click
+ */
+const maximize = () => {
+  mainWindow.show();
 };
 
+/**
+ * Clears the system's clipboard
+ */
 const clear = () => {
   clipboard.clear();
 };
 
+/**
+ * Pings the system's clipboard to check whether a value is present, and if so,
+ * sends it to the render process either as DataURL in the case of images, or
+ * simple text otherwise
+ */
 const pingClipboardChanges = () => {
   const getVal = (type, clip) =>
     type === "image" ? clip.readImage().toDataURL() : clip.readText();
@@ -80,7 +91,13 @@ const pingClipboardChanges = () => {
   }, 1000);
 };
 
-const handleIPCClipboardEvent = (ev, type, val) => {
+/**
+ * Handles
+ * @param {Electron.IpcMainEvent} ev
+ * @param {string} type
+ * @param {string} val
+ */
+const handleIPCCopy = (ev, type, val) => {
   if (type === "image")
     clipboard.writeImage(nativeImage.createFromDataURL(val));
   else clipboard.writeText(val);
@@ -96,7 +113,7 @@ const preventNavigation = (e) => {
 };
 
 ipcMain.handle(CLIPBOARD_CLEAR, clear);
-ipcMain.on(CLIPBOARD_EVENT, handleIPCClipboardEvent);
+ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
 
 const createWindow = () => {
   try {
@@ -106,8 +123,8 @@ const createWindow = () => {
       title: "Clippy",
       center: true,
       webPreferences: {
-        nodeIntegration: true,
-        backgroundThrottling: false,
+        nodeIntegration: true, // Enables require syntax
+        backgroundThrottling: true, // Throttles background animations and intervals to save power
       },
     });
 
