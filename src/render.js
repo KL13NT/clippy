@@ -99,7 +99,11 @@ class App extends Preact.Component {
         <button onClick=${this.clearHistory}>Clear log</button>
         <button onClick=${this.clearClipboard}>Clear clipboard only</button>
       </div>
-      ${state.history.length == 0 && "Free as the wind~"}
+      <div style="margin: 8px 0">
+        ${state.history.length === 0 && "Free as the wind~"}
+        ${state.history.length === 1 && "There is 1 log in clipboard."}
+        ${state.history.length >= 2 && `The are ${state.history.length} logs in clipboard.`}
+      </div>
       <ul>
         ${Array.from(state.history)
           .reverse()
