@@ -16,7 +16,7 @@
     "name": "Nabil",
     "email": "nabil.tharwat@outlook.com"
   },
-	"license": "MIT",
+  "license": "MIT",
   "config": {
     "forge": {
       "packagerConfig": {},
@@ -46,12 +46,13 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-		"htm": "^3.0.4",
-		"linkifyjs": "^2.1.9",
-		"preact": "^10.5.11"
+    "htm": "^3.0.4",
+    "linkifyjs": "^2.1.9",
+    "nanoid": "^3.1.20",
+    "preact": "^10.5.11"
   },
   "devDependencies": {
-		"@electron-forge/cli": "^6.0.0-beta.54",
+    "@electron-forge/cli": "^6.0.0-beta.54",
     "@electron-forge/maker-deb": "^6.0.0-beta.54",
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",

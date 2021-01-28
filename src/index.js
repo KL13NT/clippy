@@ -12,12 +12,10 @@ const {
   ipcMain,
   nativeImage,
 } = require("electron");
+const { nanoid } = require("nanoid");
 
-const {
-  CLIPBOARD_EVENT,
-  CLIPBOARD_CLEAR,
-  MESSAGE_CONFIRM_COPY_LINK,
-} = require("./constants");
+const Entry = require("./types/Entry");
+const { CLIPBOARD_EVENT, CLIPBOARD_CLEAR } = require("./constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
@@ -89,15 +87,19 @@ const pingClipboardChanges = () => {
 
     const formats = clipboard.availableFormats();
     const joined = formats.join(",");
-    const isImage = /image/.test(joined);
-    const type = isImage ? "image" : "text";
+    const imageMatch = joined.match(/image\/\S+/);
+    const _type = imageMatch ? imageMatch[0] : "text";
+    const type = imageMatch ? "image" : "text";
     const value = getVal(type, clipboard);
 
-    if (value)
-      mainWindow.webContents.send(CLIPBOARD_EVENT, {
-        type,
-        value,
-      });
+    if (value) {
+      const _id = nanoid(12);
+
+      mainWindow.webContents.send(
+        CLIPBOARD_EVENT,
+        new Entry({ type, _type, value, _id })
+      );
+    }
   }, 1000);
 };
 

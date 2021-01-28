@@ -10,6 +10,7 @@ const {
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
 } = require("./constants");
+const Entry = require("./types/Entry");
 
 const html = htm.bind(Preact.h);
 
@@ -25,23 +26,29 @@ function linkify(text, click) {
   });
 }
 
-function isEqual(obj1 = {}, obj2 = {}) {
-  return !Object.keys(obj1).some((key) => obj1[key] !== obj2[key]);
-}
+/**
+ * @typedef {Object} State
+ * @property {Entry[]} State.history
+ */
 
 class App extends Preact.Component {
   constructor(props) {
     super(props);
+    /** @type {State} */
     this.state = { history: [] };
   }
 
   componentDidMount() {
     ipcRenderer.on(CLIPBOARD_EVENT, (ev, entry) => {
+      // Entry here is gonna be a simple javascript object because electron
+      // serialises IPC messages, so I convert it back
       const { history } = this.state;
 
-      if (!history.some((e) => isEqual(e, entry)))
+      // TODO: if you really want a performance boost out of this you could
+      // switch `history` to an object instead, O(1) search by id
+      if (!history.some((e) => e.compareTo(entry)))
         this.setState({
-          history: [...history, entry],
+          history: [...history, new Entry(entry)],
         });
     });
   }
@@ -64,15 +71,13 @@ class App extends Preact.Component {
    * @param {UIEvent} param0
    */
   remove = ({ currentTarget }) => {
-    const { value, type } = currentTarget.dataset;
+    const { _id } = currentTarget.dataset;
 
     // The pinging on the backend will always signal to display what's currently stored on the clipboard.
     // Leaving the user confused is not part of the deal.
     if (confirm(MESSAGE_CONFIRM_REMOVE)) {
       this.setState({
-        history: this.state.history.filter(
-          (entry) => !(entry.type === type && entry.value === value)
-        ),
+        history: this.state.history.filter((entry) => entry._id !== _id),
       });
     }
   };
@@ -83,11 +88,12 @@ class App extends Preact.Component {
   copy = (e) => {
     const { target, currentTarget } = e;
 
+    // Make sure to not copy links and leave their handling to the backend
     if (target.tagName.toLowerCase() !== "a") {
-      // Make sure to not copy links and leave their handling to the backend
-      const { value, type } = currentTarget.dataset;
+      const { _id } = currentTarget.dataset;
+      const entry = this.state.history.find((e) => e._id === _id);
 
-      ipcRenderer.send(CLIPBOARD_EVENT, { value, type });
+      ipcRenderer.send(CLIPBOARD_EVENT, entry);
     }
 
     e.stopPropagation();
@@ -106,8 +112,7 @@ class App extends Preact.Component {
           .map(
             (entry) =>
               html`<li
-                data-value=${entry.value}
-                data-type=${entry.type}
+                data-_id=${entry._id}
                 style="position: relative; list-style: none;"
                 title="Click to copy"
                 onClick=${this.copy}
