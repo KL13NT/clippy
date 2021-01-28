@@ -20,7 +20,7 @@ body {
   list-style: none;
   cursor: pointer;
   margin-top: 10px;
-  padding: 10px;
+  padding: 10px 40px 10px 10px;
   position: relative;
   border: solid 1px transparent;
   word-break: break-all;
@@ -32,6 +32,24 @@ body {
 
 #container > ul > li * {
   max-width: 100%;
+}
+
+#container > ul > li > button.pin {
+  position: absolute;
+  background: transparent;
+  border: none;
+  top: 5px;
+  margin: 0;
+  right: 10px;
+  padding: 5px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+#container > ul > li > button.pin > img {
+  height: 100%;
+  width: 100%;
 }
 
 #container > ul > li:active {

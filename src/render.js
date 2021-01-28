@@ -1,8 +1,16 @@
+/**
+ * @typedef {Object} State
+ * @property {Entry[]} State.history
+ */
+
+/** */
 const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
 const htm = require("htm");
 const linkifyHTML = require("linkifyjs/html");
+
+const Entry = require("./types/Entry");
 
 const {
   MESSAGE_CLEAR_BACKEND,
@@ -10,9 +18,9 @@ const {
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
 } = require("./constants");
-const Entry = require("./types/Entry");
 
 const html = htm.bind(Preact.h);
+const container = document.querySelector("#container");
 
 function linkify(text, click) {
   return linkifyHTML(text, {
@@ -26,10 +34,29 @@ function linkify(text, click) {
   });
 }
 
-/**
- * @typedef {Object} State
- * @property {Entry[]} State.history
- */
+const ListEntry = ({ entry, pin, copy, remove }) => html`<li
+  data-_id=${entry._id}
+  style="position: relative; list-style: none;"
+  title="Click to copy"
+  onClick=${copy}
+  key=${entry._id}
+  onContextMenu=${remove}
+>
+  ${entry.type === "image"
+    ? html`<img src=${entry.value} />`
+    : html([linkify(entry.value, copy)])}
+
+  <button
+    onClick=${pin}
+    aria-label="Pin this entry"
+    class="pin"
+    title="Pin this entry"
+  >
+    ${entry.pinned
+      ? html`<img src="./push-pinned.svg" alt="pin icon" />`
+      : html`<img src="./push-pin.svg" alt="pin icon" />`}
+  </button>
+</li>`;
 
 class App extends Preact.Component {
   constructor(props) {
@@ -54,11 +81,9 @@ class App extends Preact.Component {
   }
 
   clearHistory = () => {
-    if (confirm(MESSAGE_CLEAR_BACKEND))
-      ipcRenderer.invoke(CLIPBOARD_CLEAR).then(() => {
-        this.setState({ history: [] });
-      });
-    else this.setState({ history: [] });
+    this.setState({ history: this.state.history.filter((e) => !e.pinned) });
+
+    if (confirm(MESSAGE_CLEAR_BACKEND)) this.clearClipboard();
   };
 
   clearClipboard = () => {
@@ -99,6 +124,24 @@ class App extends Preact.Component {
     e.stopPropagation();
   };
 
+  /**
+   * @param {UIEvent} e
+   */
+  pin = (e) => {
+    const { currentTarget } = e;
+    const { _id } = currentTarget.parentNode.dataset;
+    const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
+    const history = Array.from(this.state.history);
+
+    history[indexOfEntry].pinned = !history[indexOfEntry].pinned;
+
+    this.setState({
+      history: history,
+    });
+
+    e.stopPropagation();
+  };
+
   render(props, state) {
     return html`
       <div style="display: flex">
@@ -108,25 +151,32 @@ class App extends Preact.Component {
       ${state.history.length == 0 && "Free as the wind~"}
       <ul>
         ${Array.from(state.history)
+          .filter((e) => e.pinned)
           .reverse()
           .map(
             (entry) =>
-              html`<li
-                data-_id=${entry._id}
-                style="position: relative; list-style: none;"
-                title="Click to copy"
-                onClick=${this.copy}
-                onContextMenu=${this.remove}
-              >
-                ${entry.type === "image"
-                  ? html`<img src=${entry.value} />`
-                  : html([linkify(entry.value, this.copy)])}
-              </li>`
+              html`<${ListEntry}
+                entry=${entry}
+                pin=${this.pin}
+                copy=${this.copy}
+                remove=${this.remove}
+              />`
+          )}
+        ${Array.from(state.history)
+          .filter((e) => !e.pinned)
+          .reverse()
+          .map(
+            (entry) =>
+              html`<${ListEntry}
+                entry=${entry}
+                pin=${this.pin}
+                copy=${this.copy}
+                remove=${this.remove}
+              />`
           )}
       </ul>
     `;
   }
 }
 
-const container = document.querySelector("#container");
 Preact.render(html`<${App} />`, container);
