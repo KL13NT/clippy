@@ -16,7 +16,7 @@
     "name": "Nabil",
     "email": "nabil.tharwat@outlook.com"
   },
-  "license": "MIT",
+  "license": "GNU GPLv3",
   "config": {
     "forge": {
       "packagerConfig": {},
