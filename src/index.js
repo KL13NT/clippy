@@ -15,7 +15,11 @@ const {
 const { nanoid } = require("nanoid");
 
 const Entry = require("./types/Entry");
-const { CLIPBOARD_EVENT, CLIPBOARD_CLEAR } = require("./constants");
+const {
+  CLIPBOARD_EVENT,
+  CLIPBOARD_CLEAR,
+  CLIPBOARD_BULK_COPY,
+} = require("./constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
@@ -115,6 +119,10 @@ const handleIPCCopy = (ev, { type, value }) => {
   else clipboard.writeText(value);
 };
 
+const handleIPCBulk = (ev, value) => {
+  clipboard.writeText(value);
+};
+
 const externalLinkHandler = (e, url) => {
   e.preventDefault();
 
@@ -139,6 +147,7 @@ const preventNavigation = (e) => {
 
 ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
+ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
 
 const createWindow = () => {
   try {
