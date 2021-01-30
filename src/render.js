@@ -132,7 +132,7 @@ class App extends Preact.Component {
   clearHistory = () => {
     this.setState({
       ...this.state,
-      history: this.state.history.filter((e) => !e.pinned),
+      history: this.state.history.filter((e) => e.pinned),
     });
 
     if (confirm(MESSAGE_CLEAR_BACKEND)) this.clearClipboard();
