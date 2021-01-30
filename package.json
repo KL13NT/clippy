@@ -2,7 +2,7 @@
   "name": "clippy",
   "productName": "Clippy",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Clippy is a minimal clipboard history log made with Electron.js!",
   "main": "src/index.js",
   "scripts": {
     "dev": "electron-forge start",
@@ -16,7 +16,7 @@
     "name": "Nabil",
     "email": "nabil.tharwat@outlook.com"
   },
-  "license": "MIT",
+  "license": "GNU GPLv3",
   "config": {
     "forge": {
       "packagerConfig": {},

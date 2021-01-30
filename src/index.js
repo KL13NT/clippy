@@ -11,11 +11,16 @@ const {
   shell,
   ipcMain,
   nativeImage,
+  Menu,
 } = require("electron");
 const { nanoid } = require("nanoid");
 
 const Entry = require("./types/Entry");
-const { CLIPBOARD_EVENT, CLIPBOARD_CLEAR } = require("./constants");
+const {
+  CLIPBOARD_EVENT,
+  CLIPBOARD_CLEAR,
+  CLIPBOARD_BULK_COPY,
+} = require("./constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
@@ -31,8 +36,39 @@ if (require("electron-squirrel-startup")) {
  * @type {Tray} */
 let tray = null;
 
+/** @type {Electron.BrowserWindowConstructorOptions} */
+const WINDOW_OPTIONS = {
+  enableLargerThanScreen: false,
+  title: "Clippy",
+  center: true,
+  icon: path.resolve(__dirname, "./structure.png"),
+  webPreferences: {
+    nodeIntegration: true, // Enables require syntax
+    backgroundThrottling: true, // Throttles background animations and intervals to save power
+  },
+};
+
+const ABOUT_OPTIONS = {
+  center: true,
+  icon: WINDOW_OPTIONS.icon,
+  width: 600,
+  height: 600,
+  modal: true,
+  resizable: true,
+  skipTaskbar: true,
+  autoHideMenuBar: true,
+  titleBarStyle: "hidden",
+  title: "About",
+  webPreferences: {
+    nodeIntegration: true, // Enables require syntax
+    backgroundThrottling: true, // Throttles background animations and intervals to save power
+  },
+};
+
 /** @type {BrowserWindow} */
 let mainWindow = null;
+/** @type {BrowserWindow} */
+let aboutWindow = null;
 
 const confirmExit = (e) => {
   const choice = dialog.showMessageBoxSync(mainWindow, {
@@ -61,7 +97,7 @@ const minimize = (e) => {
  * Shows and gives focus to the window on tray click
  */
 const maximize = () => {
-  mainWindow.show();
+  mainWindow.maximize();
 };
 
 /**
@@ -115,6 +151,15 @@ const handleIPCCopy = (ev, { type, value }) => {
   else clipboard.writeText(value);
 };
 
+const handleIPCBulk = (ev, value) => {
+  clipboard.writeText(value);
+};
+
+/**
+ *
+ * @param {Event} e
+ * @param {String} url
+ */
 const externalLinkHandler = (e, url) => {
   e.preventDefault();
 
@@ -133,39 +178,61 @@ const externalLinkHandler = (e, url) => {
   }
 };
 
+/**
+ *
+ * @param {Event} e
+ * @param {String} url
+ */
+const aboutLinkHandler = (e, url) => {
+  e.preventDefault();
+  shell.openExternal(url);
+};
+
+/**
+ * @param {Event} e
+ */
 const preventNavigation = (e) => {
   e.preventDefault();
 };
 
 ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
+ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
 
 const createWindow = () => {
   try {
-    mainWindow = new BrowserWindow({
-      width: 800,
-      height: 600,
-      title: "Clippy",
-      center: true,
-      webPreferences: {
-        nodeIntegration: true, // Enables require syntax
-        backgroundThrottling: true, // Throttles background animations and intervals to save power
-      },
-    });
-
-    mainWindow.setAutoHideMenuBar(true);
+    mainWindow = new BrowserWindow(WINDOW_OPTIONS);
 
     mainWindow.loadFile(path.join(__dirname, "index.html"));
+    mainWindow.maximize();
+    mainWindow.on("close", confirmExit);
+    mainWindow.on("minimize", minimize);
+    mainWindow.webContents.on("will-navigate", preventNavigation);
+    mainWindow.webContents.on("new-window", externalLinkHandler);
 
-    tray = new Tray(path.resolve(__dirname, "./structure.png"));
+    tray = new Tray(WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
 
     tray.on("click", maximize);
-    mainWindow.on("close", confirmExit);
-    mainWindow.on("minimize", minimize);
 
-    mainWindow.webContents.on("will-navigate", preventNavigation);
-    mainWindow.webContents.on("new-window", externalLinkHandler);
+    const menu = Menu.buildFromTemplate([
+      {
+        label: "About",
+        click: () => {
+          aboutWindow = new BrowserWindow({
+            ...ABOUT_OPTIONS,
+            parent: mainWindow,
+          });
+
+          aboutWindow.loadURL(path.join(__dirname, "about.html"));
+          aboutWindow.removeMenu();
+          aboutWindow.webContents.on("will-navigate", preventNavigation);
+          aboutWindow.webContents.on("new-window", aboutLinkHandler);
+        },
+      },
+    ]);
+
+    app.applicationMenu = menu;
 
     pingClipboardChanges();
   } catch (error) {
