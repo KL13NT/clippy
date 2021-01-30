@@ -232,7 +232,12 @@ class App extends Preact.Component {
           Copy selection
         </button>
       </div>
-      ${state.history.length == 0 && "Free as the wind~"}
+      <div style="margin: 8px 0">
+        ${state.history.length === 0 && "Free as the wind~"}
+        ${state.history.length === 1 && "There is 1 entry in the clipboard."}
+        ${state.history.length > 1 &&
+        `There are ${state.history.length} entries in the clipboard.`}
+      </div>
       <ul data-selecting=${this.state.selecting}>
         ${Array.from(state.history)
           .filter((e) => e.pinned)
