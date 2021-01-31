@@ -70,12 +70,7 @@ let mainWindow = null;
 /** @type {BrowserWindow} */
 let aboutWindow = null;
 
-/**
- * @param {Event=} e
- */
-const minimize = (e) => {
-  if (e) e.preventDefault();
-
+const minimize = () => {
   mainWindow.hide();
   tray.displayBalloon({
     iconType: "info",
@@ -83,6 +78,14 @@ const minimize = (e) => {
     title: "Clippy",
     content: "Clippy has been minimized to tray!",
   });
+};
+
+/**
+ * @param {Event} e
+ */
+const handleMinimize = (e) => {
+  e.preventDefault();
+  minimize();
 };
 
 /**
@@ -99,10 +102,7 @@ const clear = () => {
   clipboard.clear();
 };
 
-/**
- * @param {import("electron/main").Event} e
- */
-const confirmExit = (e) => {
+const confirmExit = () => {
   const choice = dialog.showMessageBoxSync(mainWindow, {
     type: "question",
     buttons: ["Yes", "No", "Minimize Instead"],
@@ -112,10 +112,16 @@ const confirmExit = (e) => {
     cancelId: 1,
   });
 
-  if (choice === 0) return;
-  else if (choice === 1 || choice === 2) e.preventDefault();
+  if (choice === 0) app.exit(0);
+  else if (choice === 2) minimize();
+};
 
-  if (choice === 2) minimize();
+/**
+ * @param {import("electron/main").Event} e
+ */
+const handleExit = (e) => {
+  e.preventDefault();
+  confirmExit();
 };
 
 /**
@@ -218,8 +224,8 @@ const createWindow = () => {
 
     mainWindow.loadFile(path.join(__dirname, "index.html"));
     mainWindow.maximize();
-    mainWindow.on("close", confirmExit);
-    mainWindow.on("minimize", minimize);
+    mainWindow.on("close", handleExit);
+    mainWindow.on("minimize", handleMinimize);
     mainWindow.webContents.on("will-navigate", preventNavigation);
     mainWindow.webContents.on("new-window", externalLinkHandler);
 
@@ -228,7 +234,16 @@ const createWindow = () => {
 
     tray.on("click", maximize);
 
-    const menu = Menu.buildFromTemplate([
+    const trayMenu = Menu.buildFromTemplate([
+      {
+        label: "Exit",
+        click: () => confirmExit(),
+      },
+    ]);
+
+    tray.setContextMenu(trayMenu);
+
+    const mainMenu = Menu.buildFromTemplate([
       {
         label: "About",
         click: () => {
@@ -245,7 +260,7 @@ const createWindow = () => {
       },
     ]);
 
-    app.applicationMenu = menu;
+    app.applicationMenu = mainMenu;
 
     pingClipboardChanges();
   } catch (error) {
