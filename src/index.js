@@ -15,7 +15,7 @@ const {
 } = require("electron");
 const { nanoid } = require("nanoid");
 
-const Entry = require("./types/Entry");
+const Entry = require("./types/entry");
 const {
   CLIPBOARD_EVENT,
   CLIPBOARD_CLEAR,

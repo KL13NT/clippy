@@ -4,7 +4,7 @@ const Preact = require("preact");
 const htm = require("htm");
 const linkifyHTML = require("linkifyjs/html");
 
-const Entry = require("./types/Entry");
+const Entry = require("./types/entry");
 
 const {
   MESSAGE_CLEAR_BACKEND,
