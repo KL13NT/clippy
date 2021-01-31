@@ -70,20 +70,12 @@ let mainWindow = null;
 /** @type {BrowserWindow} */
 let aboutWindow = null;
 
-const confirmExit = (e) => {
-  const choice = dialog.showMessageBoxSync(mainWindow, {
-    type: "question",
-    buttons: ["Yes", "No", "Minimize Instead"],
-    title: "Confirm",
-    message: "Are you sure you want to quit?",
-  });
-
-  if (choice == 1 || choice == 2) e.preventDefault();
-  if (choice == 2) mainWindow.minimize();
-};
-
+/**
+ * @param {Event=} e
+ */
 const minimize = (e) => {
-  e.preventDefault();
+  if (e) e.preventDefault();
+
   mainWindow.hide();
   tray.displayBalloon({
     iconType: "info",
@@ -105,6 +97,25 @@ const maximize = () => {
  */
 const clear = () => {
   clipboard.clear();
+};
+
+/**
+ * @param {import("electron/main").Event} e
+ */
+const confirmExit = (e) => {
+  const choice = dialog.showMessageBoxSync(mainWindow, {
+    type: "question",
+    buttons: ["Yes", "No", "Minimize Instead"],
+    title: "Confirm",
+    message: "Are you sure you want to quit?",
+    noLink: true,
+    cancelId: 1,
+  });
+
+  if (choice === 0) return;
+  else if (choice === 1 || choice === 2) e.preventDefault();
+
+  if (choice === 2) minimize();
 };
 
 /**
@@ -168,11 +179,13 @@ const externalLinkHandler = (e, url) => {
     buttons: ["Copy", "Open", "Copy and Open"],
     title: "Link Action",
     message: "What do you wish to do with this link?",
+    noLink: true,
+    cancelId: 3,
   });
 
   if (choice === 0) clipboard.writeText(url);
   else if (choice === 1) shell.openExternal(url);
-  else {
+  else if (choice === 2) {
     clipboard.writeText(url);
     shell.openExternal(url);
   }
