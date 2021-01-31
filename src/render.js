@@ -72,21 +72,21 @@ class App extends Preact.Component {
     };
   }
 
+  /**
+   * @param {KeyboardEvent} param0
+   */
   handleKeyDownShift = ({ code }) => {
-    document.addEventListener("keyup", this.handleKeyUpShift);
-
-    if (/Shift/gi.test(code)) {
+    if (/Shift/gi.test(code) && !this.state.selecting)
       this.setState({
         ...this.state,
         selecting: true,
       });
-    }
   };
 
+  /**
+   * @param {KeyboardEvent} param0
+   */
   handleKeyUpShift = ({ code }) => {
-    document.removeEventListener("keyup", this.handleKeyUpShift);
-    document.addEventListener("click", this.handleKeyUpClick);
-
     if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected)) {
       this.setState({
         ...this.state,
@@ -96,50 +96,53 @@ class App extends Preact.Component {
   };
 
   handleKeyUpClick = () => {
-    this.setState({
-      ...this.state,
-      history: this.state.history.map(
-        (entry) =>
-          new Entry({
-            ...entry,
-            selected: false,
-          })
-      ),
-      selecting: false,
-    });
+    if (this.state.selecting)
+      this.setState({
+        ...this.state,
+        history: this.state.history.map(
+          (entry) =>
+            new Entry({
+              ...entry,
+              selected: false,
+            })
+        ),
+        selecting: false,
+      });
+  };
 
-    document.removeEventListener("click", this.handleKeyUpClick);
+  handleClipboardEvent = (ev, entry) => {
+    // Entry here is gonna be a simple javascript object because electron
+    // serialises IPC messages, so I convert it back
+    const { history } = this.state;
+
+    // if you really want a performance boost out of this you could
+    // switch `history` to an object instead, O(1) search by id
+    if (!history.some((e) => e.compareTo(entry)))
+      this.setState({
+        ...this.state,
+        history: [...history, new Entry(entry)],
+      });
   };
 
   componentDidMount() {
+    document.addEventListener("keyup", this.handleKeyUpShift);
+    document.addEventListener("click", this.handleKeyUpClick);
     document.addEventListener("keydown", this.handleKeyDownShift);
 
-    ipcRenderer.on(CLIPBOARD_EVENT, (ev, entry) => {
-      // Entry here is gonna be a simple javascript object because electron
-      // serialises IPC messages, so I convert it back
-      const { history } = this.state;
-
-      // TODO: if you really want a performance boost out of this you could
-      // switch `history` to an object instead, O(1) search by id
-      if (!history.some((e) => e.compareTo(entry)))
-        this.setState({
-          ...this.state,
-          history: [...history, new Entry(entry)],
-        });
-    });
+    ipcRenderer.on(CLIPBOARD_EVENT, this.handleClipboardEvent);
   }
 
-  clearHistory = () => {
+  clearHistory = async () => {
+    if (confirm(MESSAGE_CLEAR_BACKEND)) await this.clearClipboard();
+
     this.setState({
       ...this.state,
       history: this.state.history.filter((e) => e.pinned),
     });
-
-    if (confirm(MESSAGE_CLEAR_BACKEND)) this.clearClipboard();
   };
 
   clearClipboard = () => {
-    ipcRenderer.invoke(CLIPBOARD_CLEAR).then(() => {
+    return ipcRenderer.invoke(CLIPBOARD_CLEAR).then(() => {
       alert("Cleared your clipboard!");
     });
   };
@@ -163,12 +166,12 @@ class App extends Preact.Component {
   /**
    * @param {UIEvent} e
    */
-  copy = (e) => {
-    e.preventDefault();
-    const { target, currentTarget } = e;
+  copy = (ev) => {
+    const { target, currentTarget } = ev;
 
     // Make sure to not copy links and leave their handling to the backend
     if (target.tagName.toLowerCase() !== "a") {
+      ev.preventDefault();
       const { _id } = currentTarget.dataset;
       const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
 
@@ -191,14 +194,14 @@ class App extends Preact.Component {
       }
     }
 
-    e.stopPropagation();
+    ev.stopPropagation();
   };
 
   /**
    * @param {UIEvent} e
    */
-  pin = (e) => {
-    const { currentTarget } = e;
+  pin = (ev) => {
+    const { currentTarget } = ev;
     const { _id } = currentTarget.parentNode.dataset;
     const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
     const history = Array.from(this.state.history);
@@ -210,26 +213,51 @@ class App extends Preact.Component {
       history,
     });
 
-    e.stopPropagation();
+    ev.stopPropagation();
   };
 
-  copySelection = (e) => {
-    e.preventDefault();
+  /**
+   * @param {UIEvent} e
+   */
+  copySelection = (ev) => {
+    ev.preventDefault();
+
     const merged = this.state.history.filter((e) => e.selected).join("\r\n");
 
     ipcRenderer.send(CLIPBOARD_BULK_COPY, merged);
   };
 
+  /**
+   * @param {UIEvent} e
+   */
+  deleteSelection = (ev) => {
+    ev.preventDefault();
+
+    const { length } = this.state.history.filter((e) => e.selected);
+    this.setState(
+      {
+        ...this.state,
+        history: this.state.history.filter((e) => !e.selected),
+      },
+      () => {
+        alert(`Deleted ${length} entries.`);
+      }
+    );
+  };
+
   render(props, state) {
-    const enableCopySelection =
+    const isSelecting =
       this.state.selecting && this.state.history.some((e) => e.selected);
 
     return html`
       <div style="display: flex">
         <button onClick=${this.clearHistory}>Clear log</button>
         <button onClick=${this.clearClipboard}>Clear clipboard only</button>
-        <button onClick=${this.copySelection} disabled=${!enableCopySelection}>
+        <button onClick=${this.copySelection} disabled=${!isSelecting}>
           Copy selection
+        </button>
+        <button onClick=${this.deleteSelection} disabled=${!isSelecting}>
+          Delete selection
         </button>
       </div>
       <div style="margin: 8px 0">
