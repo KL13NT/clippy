@@ -67,6 +67,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/KL13NT"><img src="https://avatars.githubusercontent.com/u/20807178?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nabil Tharwat</b></sub></a><br /><a href="https://github.com/KL13NT/clippy/commits?author=KL13NT" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/iamkacperwasik"><img src="https://avatars.githubusercontent.com/u/57839948?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kacper Wąsik</b></sub></a><br /><a href="https://github.com/KL13NT/clippy/commits?author=iamkacperwasik" title="Code">💻</a></td>
   </tr>
 </table>
 
