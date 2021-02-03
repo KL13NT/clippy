@@ -1,6 +1,15 @@
 # Clippy! 🚀
 
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![Commitizen
+friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+![GitHub Workflow
+Status](https://img.shields.io/github/workflow/status/kl13nt/clippy/electron-builder-action)
+![GitHub issues](https://img.shields.io/github/issues-raw/kl13nt/clippy)
+![License](https://img.shields.io/github/license/kl13nt/clippy)
+![GitHub package.json
+version](https://img.shields.io/github/package-json/v/kl13nt/clippy)
+![Github All
+Contributors](https://img.shields.io/github/all-contributors/kl13nt/clippy)
 
 
 Clippy is a minimal clipboard history log made with

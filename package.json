@@ -9,14 +9,17 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "commit": "cz",
+    "release": "standard-version",
+    "contributors:add": "all-contributors add",
+    "contributors:generate": "all-contributors generate"
   },
   "keywords": [],
   "author": {
     "name": "Nabil",
     "email": "nabil.tharwat@outlook.com"
   },
-  "license": "GNU GPLv3",
+  "license": "GPL-3.0-or-later",
   "config": {
     "forge": {
       "packagerConfig": {},
@@ -42,6 +45,14 @@
           "config": {}
         }
       ]
+    },
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
   "dependencies": {
@@ -52,12 +63,19 @@
     "preact": "^10.5.11"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@electron-forge/cli": "^6.0.0-beta.54",
     "@electron-forge/maker-deb": "^6.0.0-beta.54",
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "all-contributors-cli": "^6.19.0",
+    "commitizen": "^4.2.3",
+    "cz-conventional-changelog": "3.3.0",
     "electron": "11.2.0",
-    "prettier": "^2.2.1"
+    "husky": "^4.3.8",
+    "prettier": "^2.2.1",
+    "standard-version": "^9.1.0"
   }
 }
