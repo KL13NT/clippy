@@ -3,7 +3,7 @@
 [![Commitizen
 friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![GitHub Workflow
-Status](https://img.shields.io/github/workflow/status/kl13nt/clippy/electron-builder-action)
+Status](https://img.shields.io/github/workflow/status/kl13nt/clippy/release)
 ![GitHub issues](https://img.shields.io/github/issues-raw/kl13nt/clippy)
 ![License](https://img.shields.io/github/license/kl13nt/clippy)
 ![GitHub package.json

@@ -1,6 +1,9 @@
-name: Build/release_manual
+name: release
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - "*"
 
 jobs:
   release:
