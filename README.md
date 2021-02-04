@@ -18,8 +18,6 @@ Clippy is a minimal clipboard history log made with
 clipboard. I can't showcase how badly I needed a clipboard log. I
 needed one to the point of building one.
 
-> I wrote this code in a couple hours and this was my first time using Electron, don't @ me 😂
-
 > Some of my projects are available on my [projects page](https://iamnabil.netlify.app/projects).
 
 ## Features
@@ -32,6 +30,8 @@ This project is *minimal*. Features include:
 - Copy images
 - Open links embedded in copied text
 - Copy links embedded in copied text
+- Select and delete multiple entries
+- Select and copy multiple text entries
 
 Yeah.. just those lol 😂 ~~I may add export and link rendering later on, the
 groundwork is almost done so... _maybe_. 🤷~~ Added link rendering!
@@ -61,11 +61,25 @@ project and don't wish to take the large size with me. Was a nice experiment as 
 `htm` is a JSX alternative using standard tagged templates. It basically allows
 you to write JSX-like code without babel!
 
-## Feature Requests & Bug Reports
+## 🧩 Feature Requests & 🐞 Bug Reports
 Feel free to do either or both! Everyone's welcome!
+
+## ✋ Wish to Contribute?
+
+I'm open to all kinds of contributions. If you want to:
+
+```
+🤔 Suggest a feature
+🐛 Report an issue
+📖 Improve documentation
+👩‍💻 Contribute to the code
+```
+
+You are more than welcome. Before contributing, kindly check the [guidelines](./CONTRIBUTING.md).
 
 ## License
 This projects is licensed under the GNU GPLv3 License.
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
