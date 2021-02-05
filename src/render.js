@@ -75,7 +75,7 @@ class App extends Preact.Component {
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyDown = ({ code, ctrlKey }) => {
+  handleKeyDown = ({ code, ctrlKey, shiftKey }) => {
     if (/Shift/gi.test(code) && !this.state.selecting) {
       this.setState({
         ...this.state,
@@ -83,7 +83,12 @@ class App extends Preact.Component {
       });
     }
 
-    if (ctrlKey && code === "Delete") this.clearClipboard();
+    if (ctrlKey && code === "Delete") {
+      // Combination of CTRL + SHIFT + DELETE
+      if (shiftKey) this.clearHistory();
+      // Combination of CTRL + DELETE
+      else this.clearClipboard();
+    }
   };
 
   /**
