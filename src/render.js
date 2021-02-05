@@ -83,11 +83,19 @@ class App extends Preact.Component {
       });
     }
 
-    if (ctrlKey && code === "Delete") {
-      // Combination of CTRL + SHIFT + DELETE
-      if (shiftKey) this.clearHistory();
-      // Combination of CTRL + DELETE
-      else this.clearClipboard();
+    // Delete pressed
+    if (code === "Delete") {
+      // Ctrl pressed
+      if (ctrlKey) {
+        // Combination of CTRL + SHIFT + DELETE
+        if (shiftKey) this.clearHistory();
+        // Combination of CTRL + DELETE
+        else this.clearClipboard();
+      } else {
+        // Delete
+        if (this.state.selecting && this.state.history.some((e) => e.selected))
+          this.deleteSelection();
+      }
     }
   };
 
@@ -239,7 +247,7 @@ class App extends Preact.Component {
    * @param {UIEvent} e
    */
   deleteSelection = (ev) => {
-    ev.preventDefault();
+    if (ev) ev.preventDefault();
 
     const { length } = this.state.history.filter((e) => e.selected);
     this.setState(
