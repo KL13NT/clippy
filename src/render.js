@@ -75,18 +75,19 @@ class App extends Preact.Component {
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyDownShift = ({ code }) => {
-    if (/Shift/gi.test(code) && !this.state.selecting)
+  handleKeyDown = ({ code }) => {
+    if (/Shift/gi.test(code) && !this.state.selecting) {
       this.setState({
         ...this.state,
         selecting: true,
       });
+    }
   };
 
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyUpShift = ({ code }) => {
+  handleKeyUp = ({ code }) => {
     if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected)) {
       this.setState({
         ...this.state,
@@ -125,9 +126,9 @@ class App extends Preact.Component {
   };
 
   componentDidMount() {
-    document.addEventListener("keyup", this.handleKeyUpShift);
     document.addEventListener("click", this.handleKeyUpClick);
-    document.addEventListener("keydown", this.handleKeyDownShift);
+    document.addEventListener("keyup", this.handleKeyUp);
+    document.addEventListener("keydown", this.handleKeyDown);
 
     ipcRenderer.on(CLIPBOARD_EVENT, this.handleClipboardEvent);
   }
