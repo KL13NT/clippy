@@ -93,8 +93,7 @@ class App extends Preact.Component {
         else this.clearClipboard();
       } else {
         // Delete
-        if (this.state.selecting && this.state.history.some((e) => e.selected))
-          this.deleteSelection();
+        if (this.isSelecting()) this.deleteSelection();
       }
     }
   };
@@ -261,18 +260,22 @@ class App extends Preact.Component {
     );
   };
 
-  render(props, state) {
-    const isSelecting =
-      this.state.selecting && this.state.history.some((e) => e.selected);
+  /**
+   * @returns {boolean}
+   */
+  isSelecting = () => {
+    return this.state.selecting && this.state.history.some((e) => e.selected);
+  };
 
+  render(props, state) {
     return html`
       <div style="display: flex">
         <button onClick=${this.clearHistory}>Clear log</button>
         <button onClick=${this.clearClipboard}>Clear clipboard only</button>
-        <button onClick=${this.copySelection} disabled=${!isSelecting}>
+        <button onClick=${this.copySelection} disabled=${!this.isSelecting()}>
           Copy selection
         </button>
-        <button onClick=${this.deleteSelection} disabled=${!isSelecting}>
+        <button onClick=${this.deleteSelection} disabled=${!this.isSelecting()}>
           Delete selection
         </button>
       </div>
