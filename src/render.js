@@ -75,13 +75,15 @@ class App extends Preact.Component {
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyDown = ({ code }) => {
+  handleKeyDown = ({ code, ctrlKey }) => {
     if (/Shift/gi.test(code) && !this.state.selecting) {
       this.setState({
         ...this.state,
         selecting: true,
       });
     }
+
+    if (ctrlKey && code === "Delete") this.clearClipboard();
   };
 
   /**
