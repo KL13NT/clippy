@@ -70,6 +70,8 @@ class App extends Preact.Component {
       history: [],
       selecting: false,
     };
+
+    this.copySelectionButtonRef = Preact.createRef();
   }
 
   /**
@@ -95,6 +97,10 @@ class App extends Preact.Component {
         // Delete
         if (this.isSelecting()) this.deleteSelection();
       }
+    }
+
+    if (code === "KeyC" && ctrlKey) {
+      if (this.isSelecting()) this.copySelectionButtonRef.current.click();
     }
   };
 
@@ -179,7 +185,7 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} e
+   * @param {UIEvent} ev
    */
   copy = (ev) => {
     const { target, currentTarget } = ev;
@@ -213,7 +219,7 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} e
+   * @param {UIEvent} ev
    */
   pin = (ev) => {
     const { currentTarget } = ev;
@@ -232,18 +238,16 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} e
+   * @param {UIEvent} ev
    */
   copySelection = (ev) => {
-    ev.preventDefault();
-
     const merged = this.state.history.filter((e) => e.selected).join("\r\n");
 
     ipcRenderer.send(CLIPBOARD_BULK_COPY, merged);
   };
 
   /**
-   * @param {UIEvent} e
+   * @param {UIEvent} ev
    */
   deleteSelection = (ev) => {
     if (ev) ev.preventDefault();
@@ -272,7 +276,11 @@ class App extends Preact.Component {
       <div style="display: flex">
         <button onClick=${this.clearHistory}>Clear log</button>
         <button onClick=${this.clearClipboard}>Clear clipboard only</button>
-        <button onClick=${this.copySelection} disabled=${!this.isSelecting()}>
+        <button
+          onClick=${this.copySelection}
+          disabled=${!this.isSelecting()}
+          ref=${this.copySelectionButtonRef}
+        >
           Copy selection
         </button>
         <button onClick=${this.deleteSelection} disabled=${!this.isSelecting()}>
