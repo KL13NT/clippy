@@ -14,6 +14,7 @@ const {
   Menu,
 } = require("electron");
 const { nanoid } = require("nanoid");
+const url = require("url");
 
 const Entry = require("./types/entry");
 const {
@@ -252,7 +253,9 @@ const createWindow = () => {
             parent: mainWindow,
           });
 
-          aboutWindow.loadURL(path.join(__dirname, "about.html"));
+          aboutWindow.loadURL(
+            url.pathToFileURL(path.resolve("src", "about.html")).href
+          );
           aboutWindow.removeMenu();
           aboutWindow.webContents.on("will-navigate", preventNavigation);
           aboutWindow.webContents.on("new-window", aboutLinkHandler);
