@@ -252,7 +252,7 @@ const createWindow = () => {
             parent: mainWindow,
           });
 
-          aboutWindow.loadURL(path.join(__dirname, "about.html"));
+          aboutWindow.loadURL(`file://${__dirname}/about.html`);
           aboutWindow.removeMenu();
           aboutWindow.webContents.on("will-navigate", preventNavigation);
           aboutWindow.webContents.on("new-window", aboutLinkHandler);
