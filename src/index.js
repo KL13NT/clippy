@@ -223,7 +223,7 @@ const createWindow = () => {
   try {
     mainWindow = new BrowserWindow(WINDOW_OPTIONS);
 
-    mainWindow.loadURL(pathToFileURL(path.resolve("src", "index.html")).href);
+    mainWindow.loadURL(pathToFileURL(path.resolve(__dirname, "./index.html")).href);
     mainWindow.maximize();
     mainWindow.on("close", handleExit);
     mainWindow.on("minimize", handleMinimize);
@@ -254,7 +254,7 @@ const createWindow = () => {
           });
 
           aboutWindow.loadURL(
-            pathToFileURL(path.resolve("src", "about.html")).href
+            pathToFileURL(path.resolve(__dirname, "./about.html")).href
           );
           aboutWindow.removeMenu();
           aboutWindow.webContents.on("will-navigate", preventNavigation);
