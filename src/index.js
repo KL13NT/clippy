@@ -40,26 +40,8 @@ let tray = null;
 /** @type {Electron.BrowserWindowConstructorOptions} */
 const WINDOW_OPTIONS = {
   enableLargerThanScreen: false,
-  title: "Clippy",
   center: true,
   icon: path.resolve(__dirname, "./structure.png"),
-  webPreferences: {
-    nodeIntegration: true, // Enables require syntax
-    backgroundThrottling: true, // Throttles background animations and intervals to save power
-  },
-};
-
-const ABOUT_OPTIONS = {
-  center: true,
-  icon: WINDOW_OPTIONS.icon,
-  width: 600,
-  height: 600,
-  modal: true,
-  resizable: true,
-  skipTaskbar: true,
-  autoHideMenuBar: true,
-  titleBarStyle: "hidden",
-  title: "About",
   webPreferences: {
     nodeIntegration: true, // Enables require syntax
     backgroundThrottling: true, // Throttles background animations and intervals to save power
@@ -70,6 +52,8 @@ const ABOUT_OPTIONS = {
 let mainWindow = null;
 /** @type {BrowserWindow} */
 let aboutWindow = null;
+/** @type {BrowserWindow} */
+let shortcutsWindow = null;
 
 const minimize = () => {
   mainWindow.hide();
@@ -151,7 +135,7 @@ const pingClipboardChanges = () => {
 
       mainWindow.webContents.send(
         CLIPBOARD_EVENT,
-        new Entry({ type, _type, value, _id })
+        new Entry({ type, _type, value, _id }),
       );
     }
   }, 1000);
@@ -219,16 +203,48 @@ ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
 ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
 
+const DEFAULT_PAGE_OPTIONS = {
+  center: true,
+  icon: WINDOW_OPTIONS.icon,
+  width: 600,
+  height: 600,
+  modal: true,
+  resizable: true,
+  skipTaskbar: true,
+  autoHideMenuBar: true,
+  titleBarStyle: "hidden",
+  webPreferences: {
+    nodeIntegration: true, // Enables require syntax
+    backgroundThrottling: true, // Throttles background animations and intervals to save power
+  },
+};
+
+/**
+ * @param {string} title
+ * @param {Object} options
+ */
+const createPage = (title, options, cb) => {
+  const window = new BrowserWindow({
+    ...options,
+    title,
+  });
+
+  window.webContents.on("will-navigate", preventNavigation);
+  window.webContents.on("new-window", externalLinkHandler);
+
+  cb(window);
+};
+
 const createWindow = () => {
   try {
-    mainWindow = new BrowserWindow(WINDOW_OPTIONS);
+    createPage("Clippy", WINDOW_OPTIONS, (window) => {
+      window.loadURL(pathToFileURL(path.resolve("src", "index.html")).href);
+      window.maximize();
+      window.on("close", handleExit);
+      window.on("minimize", handleMinimize);
 
-    mainWindow.loadURL(pathToFileURL(path.resolve(__dirname, "./index.html")).href);
-    mainWindow.maximize();
-    mainWindow.on("close", handleExit);
-    mainWindow.on("minimize", handleMinimize);
-    mainWindow.webContents.on("will-navigate", preventNavigation);
-    mainWindow.webContents.on("new-window", externalLinkHandler);
+      mainWindow = window;
+    });
 
     tray = new Tray(WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
@@ -248,17 +264,18 @@ const createWindow = () => {
       {
         label: "About",
         click: () => {
-          aboutWindow = new BrowserWindow({
-            ...ABOUT_OPTIONS,
-            parent: mainWindow,
-          });
+          createPage(
+            "About",
+            { ...DEFAULT_PAGE_OPTIONS, parent: mainWindow },
+            (window) => {
+              window.loadURL(
+                pathToFileURL(path.resolve("src", "about.html")).href,
+              );
+              window.removeMenu();
 
-          aboutWindow.loadURL(
-            pathToFileURL(path.resolve(__dirname, "./about.html")).href
+              aboutWindow = window;
+            },
           );
-          aboutWindow.removeMenu();
-          aboutWindow.webContents.on("will-navigate", preventNavigation);
-          aboutWindow.webContents.on("new-window", aboutLinkHandler);
         },
       },
     ]);
