@@ -179,15 +179,15 @@ class App extends Preact.Component {
 
         if (history[indexOfEntry].type !== "text") {
           alert("Fatal: Can only bulk copy text entries");
-          return;
+          
+        }else{
+          history[indexOfEntry].selected = !history[indexOfEntry].selected;
+  
+          this.setState({
+            ...this.state,
+            history,
+          });
         }
-
-        history[indexOfEntry].selected = !history[indexOfEntry].selected;
-
-        this.setState({
-          ...this.state,
-          history,
-        });
       }
     }
 
