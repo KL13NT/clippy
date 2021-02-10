@@ -175,22 +175,20 @@ class App extends Preact.Component {
       const { _id } = currentTarget.dataset;
       const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
 
-      if (!this.state.selecting)
+      if (!this.state.selecting){
         ipcRenderer.send(CLIPBOARD_EVENT, this.state.history[indexOfEntry]);
-      else {
+      }else {
         const history = Array.from(this.state.history);
 
         if (history[indexOfEntry].type !== "text") {
           alert("Fatal: Can only bulk copy text entries");
-          return;
+        }else{
+          history[indexOfEntry].selected = !history[indexOfEntry].selected;
+          this.setState({
+            ...this.state,
+            history,
+          });
         }
-
-        history[indexOfEntry].selected = !history[indexOfEntry].selected;
-
-        this.setState({
-          ...this.state,
-          history,
-        });
       }
     }
 
