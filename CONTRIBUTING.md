@@ -25,9 +25,9 @@ Contributions are made to this repo via Issues and Pull Requests (PRs). A few ge
 
 Issues should be used to report problems with the platform, request a new feature, or to discuss potential changes before a PR is created. When you create a new Issue, a template will be loaded that will guide you through collecting and providing the information we need to investigate.
 
-If you find an Issue that addresses the problem you're having, please add your own reproduction information to the existing issue rather than creating a new one. Adding a [reaction](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) can also help be indicating to our maintainers that a particular problem is affecting more than just the reporter.
+If you find an Issue that addresses the problem you're having, please add your own reproduction information to the existing issue rather than creating a new one. Adding a [reaction](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) can also help indicate to our maintainers that a particular problem is affecting more than just the reporter.
 
-> ⚠️ Reproduction code for bugs greatly helps.
+> ⚠️ Reproduction code/steps for bugs greatly helps.
 
 ### Pull Requests
 
@@ -43,18 +43,23 @@ PRs to our libraries are always welcome and can be a quick way to get your fix o
 
 In general, I follow the ["fork-and-pull" Git workflow](https://github.com/susam/gitpr)
 
-1.  Fork the repository to your own Github account
-2.  Clone the project to your machine
-3.  Create a branch locally with a descriptive name
-4.  Commit changes to the branch
-5.  Following any formatting and testing guidelines specific to this repo
-6.  Push changes to your fork
-7.  Open a PR in our repository and follow the PR template so that we can efficiently review the changes.
+0. Ask for assignment to an issue
+1. Fork the repository to your own Github account
+2. Clone the project to your machine
+3. Create a branch locally with a descriptive name
+4. Commit changes to the branch
+5. Following any formatting and testing guidelines specific to this repo
+6. Push changes to your fork
+7. Open a PR in our repository and follow the PR template so that we can efficiently review the changes.
 
 ## Committing
 Please run `npm run commit` to start committing changes after using `git add`.
-This will ensure you use proper formatting using an interactive commit creator.
+This will ensure you use proper formatting using an interactive commit creator,
+and will activate the pre-commit hook to lint, prettify, and run the available
+tests against your code.
+
 If you know what the Angular commit format is and have used it before alongside
-standard-version then by all means feel free to commit as you usually do. Note
-though that your commit messages will be checked by `husky` to make sure they're
+standard-version then by all means feel free to commit as you usually do after
+running `npm run precommit`.
+Note though that your commit messages will be checked by `husky` to make sure they're
 compliant either way.
