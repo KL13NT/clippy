@@ -38,31 +38,48 @@ groundwork is almost done so... _maybe_. 🤷~~ Added link rendering!
 
 ## Getting Started
 
+This project uses `electron-forge` under the hood, allowing us to develop,
+build, and publish our Electron app with simple commands.
+
+We use [Commitizen](https://github.com/commitizen) to manage the contribution flow.
+
+When committing we use `npm run commit` instead of `git commit`. This initiates
+commitizen and starts its interactive cli to create commit messages that follow
+the guidelines. The commit is then linted by
+[commitlint](https://github.com/conventional-changelog/commitlint) to make sure
+it follows the [Angular Commit Message
+Format](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-format).
+For the reasoning behind this see issue [#39](https://github.com/KL13NT/clippy/issues/39).
+
+> If you're an advanced user you may use `git commit` directly as long as your
+> commits follow the guidelines.
+
+> Make sure to [sign](https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification) your commits. This guarantees ownership of your contributions.
+
+To developer or build locally you first need to install the dependencies. We use
+*npm* for this.
+
+```
+npm install
+```
+
 ### Developing
-Just start the development server using the `dev` command. Voila!
+
+In development, the electron-forge dev command is used to start the application
+in development mode.
+
+```
+npm run dev
+```
 
 ### Building
-You can build from source using the `make` command. Requires NodeJS and NPM,
-just in case.
+You can build from source using the `make` command. Building for a target OS requires
+that respective OS. You probably won't need to run this unless you're on the
+core team.
 
-## Why Electron?
-Why not? I'm a frontend developer and work with JavaScript all the time, so this
-was the easiest option available to me!
-
-## Why Preact?
-I was lazy and made this in a couple iterations over a few hours, so I didn't
-want to build the DOM logic all over again.
-
-## Why not React?
-I may port the code to some other
-project and don't wish to take the large size with me. Was a nice experiment as well.
-
-## What the hell is `htm`?
-`htm` is a JSX alternative using standard tagged templates. It basically allows
-you to write JSX-like code without babel!
-
-## 🧩 Feature Requests & 🐞 Bug Reports
-Feel free to do either or both! Everyone's welcome!
+```
+npm run make
+```
 
 ## ✋ Wish to Contribute?
 
