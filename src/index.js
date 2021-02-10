@@ -110,7 +110,7 @@ const confirmExit = () => {
 };
 
 /**
- * @param {import("electron/main").Event} e
+ * @param {Event} e
  */
 const handleExit = (e) => {
   e.preventDefault();
@@ -193,10 +193,10 @@ const externalLinkHandler = (e, url) => {
  * @param {Event} e
  * @param {String} url
  */
-// const aboutLinkHandler = (e, url) => {
-//   e.preventDefault();
-//   shell.openExternal(url);
-// };
+const aboutLinkHandler = (e, url) => {
+  e.preventDefault();
+  shell.openExternal(url);
+};
 
 /**
  * @param {Event} e
@@ -215,16 +215,13 @@ ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
  * @param {Object} config.options
  * @param {string} config.fileUrl
  */
-const createPage = ({ title, options, fileUrl }) => {
+const createPage = ({ title, options, url }) => {
   const window = new BrowserWindow({
     ...options,
     title,
   });
 
-  window.webContents.on("will-navigate", preventNavigation);
-  window.webContents.on("new-window", externalLinkHandler);
-
-  window.loadURL(pathToFileURL(fileUrl).href);
+  window.loadURL(pathToFileURL(url).href);
 
   return window;
 };
@@ -234,12 +231,14 @@ const createWindow = () => {
     mainWindow = createPage({
       title: "Clippy",
       options: DEFAULT_WINDOW_OPTIONS,
-      fileUrl: path.resolve(__dirname, "./index.html"),
+      url: path.resolve(__dirname, "./index.html"),
     });
 
     mainWindow.maximize();
     mainWindow.on("close", handleExit);
     mainWindow.on("minimize", handleMinimize);
+    mainWindow.webContents.on("will-navigate", preventNavigation);
+    mainWindow.webContents.on("new-window", externalLinkHandler);
 
     tray = new Tray(DEFAULT_WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
@@ -261,7 +260,7 @@ const createWindow = () => {
         click: () => {
           aboutWindow = createPage({
             title: "About",
-            fileUrl: path.resolve(__dirname, "./about.html"),
+            url: path.resolve(__dirname, "./about.html"),
             options: {
               ...DEFAULT_PAGE_OPTIONS,
               parent: mainWindow,
@@ -269,6 +268,8 @@ const createWindow = () => {
           });
 
           aboutWindow.removeMenu();
+          aboutWindow.webContents.on("will-navigate", preventNavigation);
+          aboutWindow.webContents.on("new-window", aboutLinkHandler);
         },
       },
     ]);
