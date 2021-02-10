@@ -78,42 +78,37 @@ class App extends Preact.Component {
    * @param {KeyboardEvent} param0
    */
   handleKeyDown = ({ code, ctrlKey, shiftKey }) => {
-    if (/Shift/gi.test(code) && !this.state.selecting) {
+    if (/Shift/gi.test(code) && !this.state.selecting)
       this.setState({
         ...this.state,
         selecting: true,
       });
-    }
 
     // Delete pressed
-    if (code === "Delete") {
-      // Ctrl pressed
-      if (ctrlKey) {
-        // Combination of CTRL + SHIFT + DELETE
-        if (shiftKey) this.clearHistory();
+    if (code === "Delete")
+      if (ctrlKey)
+        if (shiftKey)
+          // Ctrl pressed
+          // Combination of CTRL + SHIFT + DELETE
+          this.clearHistory();
         // Combination of CTRL + DELETE
         else this.clearClipboard();
-      } else {
-        // Delete
-        if (this.isSelecting()) this.deleteSelection();
-      }
-    }
+      // Delete
+      else if (this.isSelecting()) this.deleteSelection();
 
-    if (code === "KeyC" && ctrlKey) {
+    if (code === "KeyC" && ctrlKey)
       if (this.isSelecting()) this.copySelectionButtonRef.current.click();
-    }
   };
 
   /**
    * @param {KeyboardEvent} param0
    */
   handleKeyUp = ({ code }) => {
-    if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected)) {
+    if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected))
       this.setState({
         ...this.state,
         selecting: false,
       });
-    }
   };
 
   handleKeyUpClick = () => {
@@ -125,7 +120,7 @@ class App extends Preact.Component {
             new Entry({
               ...entry,
               selected: false,
-            })
+            }),
         ),
         selecting: false,
       });
@@ -176,12 +171,11 @@ class App extends Preact.Component {
 
     // The pinging on the backend will always signal to display what's currently stored on the clipboard.
     // Leaving the user confused is not part of the deal.
-    if (confirm(MESSAGE_CONFIRM_REMOVE)) {
+    if (confirm(MESSAGE_CONFIRM_REMOVE))
       this.setState({
         ...this.state,
         history: this.state.history.filter((entry) => entry._id !== _id),
       });
-    }
   };
 
   /**
@@ -240,7 +234,7 @@ class App extends Preact.Component {
   /**
    * @param {UIEvent} ev
    */
-  copySelection = (ev) => {
+  copySelection = () => {
     const merged = this.state.history.filter((e) => e.selected).join("\r\n");
 
     ipcRenderer.send(CLIPBOARD_BULK_COPY, merged);
@@ -260,7 +254,7 @@ class App extends Preact.Component {
       },
       () => {
         alert(`Deleted ${length} entries.`);
-      }
+      },
     );
   };
 
@@ -304,7 +298,7 @@ class App extends Preact.Component {
                 pin=${this.pin}
                 copy=${this.copy}
                 remove=${this.remove}
-              />`
+              />`,
           )}
         ${Array.from(state.history)
           .filter((e) => !e.pinned)
@@ -316,7 +310,7 @@ class App extends Preact.Component {
                 pin=${this.pin}
                 copy=${this.copy}
                 remove=${this.remove}
-              />`
+              />`,
           )}
       </ul>
     `;

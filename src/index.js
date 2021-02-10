@@ -27,9 +27,7 @@ app.setLoginItemSettings({
   openAtLogin: true,
 });
 
-if (require("electron-squirrel-startup")) {
-  app.quit();
-}
+if (require("electron-squirrel-startup")) app.quit();
 
 /**
  * defining tray globally to avoid GC bug
@@ -38,7 +36,7 @@ if (require("electron-squirrel-startup")) {
 let tray = null;
 
 /** @type {Electron.BrowserWindowConstructorOptions} */
-const WINDOW_OPTIONS = {
+const DEFAULT_WINDOW_OPTIONS = {
   enableLargerThanScreen: false,
   center: true,
   icon: path.resolve(__dirname, "./structure.png"),
@@ -48,12 +46,22 @@ const WINDOW_OPTIONS = {
   },
 };
 
+/** @type {Electron.BrowserWindowConstructorOptions} */
+const DEFAULT_PAGE_OPTIONS = {
+  ...DEFAULT_WINDOW_OPTIONS,
+  width: 600,
+  height: 600,
+  modal: true,
+  resizable: true,
+  skipTaskbar: true,
+  autoHideMenuBar: true,
+  titleBarStyle: "hidden",
+};
+
 /** @type {BrowserWindow} */
 let mainWindow = null;
 /** @type {BrowserWindow} */
 let aboutWindow = null;
-/** @type {BrowserWindow} */
-let shortcutsWindow = null;
 
 const minimize = () => {
   mainWindow.hide();
@@ -119,9 +127,7 @@ const pingClipboardChanges = () => {
     type === "image" ? clip.readImage().toDataURL() : clip.readText();
 
   const pinging = setInterval(() => {
-    if (mainWindow.isDestroyed()) {
-      return clearInterval(pinging);
-    }
+    if (mainWindow.isDestroyed()) return clearInterval(pinging);
 
     const formats = clipboard.availableFormats();
     const joined = formats.join(",");
@@ -187,10 +193,10 @@ const externalLinkHandler = (e, url) => {
  * @param {Event} e
  * @param {String} url
  */
-const aboutLinkHandler = (e, url) => {
-  e.preventDefault();
-  shell.openExternal(url);
-};
+// const aboutLinkHandler = (e, url) => {
+//   e.preventDefault();
+//   shell.openExternal(url);
+// };
 
 /**
  * @param {Event} e
@@ -203,27 +209,13 @@ ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
 ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
 
-const DEFAULT_PAGE_OPTIONS = {
-  center: true,
-  icon: WINDOW_OPTIONS.icon,
-  width: 600,
-  height: 600,
-  modal: true,
-  resizable: true,
-  skipTaskbar: true,
-  autoHideMenuBar: true,
-  titleBarStyle: "hidden",
-  webPreferences: {
-    nodeIntegration: true, // Enables require syntax
-    backgroundThrottling: true, // Throttles background animations and intervals to save power
-  },
-};
-
 /**
- * @param {string} title
- * @param {Object} options
+ * @param {Object} config
+ * @param {string} config.title
+ * @param {Object} config.options
+ * @param {string} config.fileUrl
  */
-const createPage = (title, options, cb) => {
+const createPage = ({ title, options, fileUrl }) => {
   const window = new BrowserWindow({
     ...options,
     title,
@@ -232,21 +224,24 @@ const createPage = (title, options, cb) => {
   window.webContents.on("will-navigate", preventNavigation);
   window.webContents.on("new-window", externalLinkHandler);
 
-  cb(window);
+  window.loadURL(pathToFileURL(fileUrl).href);
+
+  return window;
 };
 
 const createWindow = () => {
   try {
-    createPage("Clippy", WINDOW_OPTIONS, (window) => {
-      window.loadURL(pathToFileURL(path.resolve("src", "index.html")).href);
-      window.maximize();
-      window.on("close", handleExit);
-      window.on("minimize", handleMinimize);
-
-      mainWindow = window;
+    mainWindow = createPage({
+      title: "Clippy",
+      options: DEFAULT_WINDOW_OPTIONS,
+      fileUrl: path.resolve(__dirname, "./index.html"),
     });
 
-    tray = new Tray(WINDOW_OPTIONS.icon);
+    mainWindow.maximize();
+    mainWindow.on("close", handleExit);
+    mainWindow.on("minimize", handleMinimize);
+
+    tray = new Tray(DEFAULT_WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
 
     tray.on("click", maximize);
@@ -264,18 +259,16 @@ const createWindow = () => {
       {
         label: "About",
         click: () => {
-          createPage(
-            "About",
-            { ...DEFAULT_PAGE_OPTIONS, parent: mainWindow },
-            (window) => {
-              window.loadURL(
-                pathToFileURL(path.resolve("src", "about.html")).href,
-              );
-              window.removeMenu();
-
-              aboutWindow = window;
+          aboutWindow = createPage({
+            title: "About",
+            fileUrl: path.resolve(__dirname, "./about.html"),
+            options: {
+              ...DEFAULT_PAGE_OPTIONS,
+              parent: mainWindow,
             },
-          );
+          });
+
+          aboutWindow.removeMenu();
         },
       },
     ]);
@@ -294,15 +287,11 @@ app.on("window-all-closed", () => {
   // Quit when all windows are closed.
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  if (process.platform !== "darwin") app.quit();
 });
 
 app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
