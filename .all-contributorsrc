@@ -18,7 +18,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "MahmoudHendi1",
+      "name": "Mahmoud Salah",
+      "avatar_url": "https://avatars.githubusercontent.com/u/51229687?v=4",
+      "profile": "https://github.com/MahmoudHendi1",
+      "contributions": [
+        "code"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
