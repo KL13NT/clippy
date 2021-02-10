@@ -10,11 +10,11 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "commit": "cz",
-    "precommmit": "lint && pretty && test",
+    "precommit": "npm run lint && npm run pretty && npm run test",
     "release": "standard-version",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
-    "lint": "eslint --ext .js,.ts ./src --config .eslintrc.js --fix",
+    "lint": "eslint --ext .js,.ts ./src --config .eslintrc.yml --fix",
     "pretty": "prettier --write \"./**/*.{js,jsx,json}\"",
     "test": "jest --colors --expand --logHeapUsage --config jest.config.js --verbose --coverage --passWithNoTests"
   },
