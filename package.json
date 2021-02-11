@@ -5,7 +5,9 @@
   "description": "Clippy is a minimal clipboard history log made with Electron.js!",
   "main": "src/index.js",
   "scripts": {
-    "dev": "electron-forge start",
+    "dev": "npm-run-all -p dev:render dev:forge",
+    "dev:forge": "electron-forge start",
+    "dev:render": "npx babel --watch src/render --out-dir ./dist/render",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -52,13 +54,18 @@
     }
   },
   "dependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "babel-preset-react-app": "^3.1.2",
+    "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
-    "htm": "^3.0.4",
     "linkifyjs": "^2.1.9",
     "nanoid": "^3.1.20",
-    "preact": "^10.5.11"
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
   },
   "devDependencies": {
+    "@axe-core/react": "^4.1.1",
     "@babel/core": "^7.12.13",
     "@babel/eslint-parser": "^7.12.13",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
@@ -75,6 +82,7 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
     "@electron-forge/publisher-github": "^6.0.0-beta.54",
     "all-contributors-cli": "^6.19.0",
+    "babel-jest": "^23.4.2",
     "commitizen": "^4.2.3",
     "cz-conventional-changelog": "3.3.0",
     "electron": "11.2.0",
@@ -90,6 +98,7 @@
     "eslint-plugin-react": "^7.22.0",
     "husky": "^4.3.8",
     "jest": "^26.6.3",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
     "standard-version": "^9.1.0"
   }

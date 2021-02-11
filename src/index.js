@@ -1,6 +1,7 @@
 // DISCLAIMER: I wrote this code in a couple hours and this was my first time
 // using Electron, don't @ me 😂
 
+const isDev = require("electron-is-dev");
 const path = require("path");
 const {
   app,
@@ -240,9 +241,10 @@ const createWindow = () => {
     mainWindow.webContents.on("will-navigate", preventNavigation);
     mainWindow.webContents.on("new-window", externalLinkHandler);
 
+    if (isDev) mainWindow.webContents.toggleDevTools();
+
     tray = new Tray(DEFAULT_WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
-
     tray.on("click", maximize);
 
     const trayMenu = Menu.buildFromTemplate([
