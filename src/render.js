@@ -70,45 +70,29 @@ class App extends Preact.Component {
       history: [],
       selecting: false,
     };
-
-    this.copySelectionButtonRef = Preact.createRef();
   }
 
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyDown = ({ code, ctrlKey, shiftKey }) => {
+  handleKeyDownShift = ({ code }) => {
     if (/Shift/gi.test(code) && !this.state.selecting)
       this.setState({
         ...this.state,
         selecting: true,
       });
-
-    // Delete pressed
-    if (code === "Delete")
-      if (ctrlKey)
-        if (shiftKey)
-          // Ctrl pressed
-          // Combination of CTRL + SHIFT + DELETE
-          this.clearHistory();
-        // Combination of CTRL + DELETE
-        else this.clearClipboard();
-      // Delete
-      else if (this.isSelecting()) this.deleteSelection();
-
-    if (code === "KeyC" && ctrlKey)
-      if (this.isSelecting()) this.copySelectionButtonRef.current.click();
   };
 
   /**
    * @param {KeyboardEvent} param0
    */
-  handleKeyUp = ({ code }) => {
-    if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected))
+  handleKeyUpShift = ({ code }) => {
+    if (/Shift/gi.test(code) && !this.state.history.some((e) => e.selected)) {
       this.setState({
         ...this.state,
         selecting: false,
       });
+    }
   };
 
   handleKeyUpClick = () => {
@@ -120,7 +104,7 @@ class App extends Preact.Component {
             new Entry({
               ...entry,
               selected: false,
-            }),
+            })
         ),
         selecting: false,
       });
@@ -141,9 +125,9 @@ class App extends Preact.Component {
   };
 
   componentDidMount() {
+    document.addEventListener("keyup", this.handleKeyUpShift);
     document.addEventListener("click", this.handleKeyUpClick);
-    document.addEventListener("keyup", this.handleKeyUp);
-    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keydown", this.handleKeyDownShift);
 
     ipcRenderer.on(CLIPBOARD_EVENT, this.handleClipboardEvent);
   }
@@ -171,15 +155,16 @@ class App extends Preact.Component {
 
     // The pinging on the backend will always signal to display what's currently stored on the clipboard.
     // Leaving the user confused is not part of the deal.
-    if (confirm(MESSAGE_CONFIRM_REMOVE))
+    if (confirm(MESSAGE_CONFIRM_REMOVE)) {
       this.setState({
         ...this.state,
         history: this.state.history.filter((entry) => entry._id !== _id),
       });
+    }
   };
 
   /**
-   * @param {UIEvent} ev
+   * @param {UIEvent} e
    */
   copy = (ev) => {
     const { target, currentTarget } = ev;
@@ -211,7 +196,7 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} ev
+   * @param {UIEvent} e
    */
   pin = (ev) => {
     const { currentTarget } = ev;
@@ -230,19 +215,21 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} ev
+   * @param {UIEvent} e
    */
-  copySelection = () => {
+  copySelection = (ev) => {
+    ev.preventDefault();
+
     const merged = this.state.history.filter((e) => e.selected).join("\r\n");
 
     ipcRenderer.send(CLIPBOARD_BULK_COPY, merged);
   };
 
   /**
-   * @param {UIEvent} ev
+   * @param {UIEvent} e
    */
   deleteSelection = (ev) => {
-    if (ev) ev.preventDefault();
+    ev.preventDefault();
 
     const { length } = this.state.history.filter((e) => e.selected);
     this.setState(
@@ -252,30 +239,22 @@ class App extends Preact.Component {
       },
       () => {
         alert(`Deleted ${length} entries.`);
-      },
+      }
     );
   };
 
-  /**
-   * @returns {boolean}
-   */
-  isSelecting = () => {
-    return this.state.selecting && this.state.history.some((e) => e.selected);
-  };
-
   render(props, state) {
+    const isSelecting =
+      this.state.selecting && this.state.history.some((e) => e.selected);
+
     return html`
       <div style="display: flex">
         <button onClick=${this.clearHistory}>Clear log</button>
         <button onClick=${this.clearClipboard}>Clear clipboard only</button>
-        <button
-          onClick=${this.copySelection}
-          disabled=${!this.isSelecting()}
-          ref=${this.copySelectionButtonRef}
-        >
+        <button onClick=${this.copySelection} disabled=${!isSelecting}>
           Copy selection
         </button>
-        <button onClick=${this.deleteSelection} disabled=${!this.isSelecting()}>
+        <button onClick=${this.deleteSelection} disabled=${!isSelecting}>
           Delete selection
         </button>
       </div>
@@ -296,7 +275,7 @@ class App extends Preact.Component {
                 pin=${this.pin}
                 copy=${this.copy}
                 remove=${this.remove}
-              />`,
+              />`
           )}
         ${Array.from(state.history)
           .filter((e) => !e.pinned)
@@ -308,7 +287,7 @@ class App extends Preact.Component {
                 pin=${this.pin}
                 copy=${this.copy}
                 remove=${this.remove}
-              />`,
+              />`
           )}
       </ul>
     `;

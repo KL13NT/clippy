@@ -27,7 +27,9 @@ app.setLoginItemSettings({
   openAtLogin: true,
 });
 
-if (require("electron-squirrel-startup")) app.quit();
+if (require("electron-squirrel-startup")) {
+  app.quit();
+}
 
 /**
  * defining tray globally to avoid GC bug
@@ -36,8 +38,9 @@ if (require("electron-squirrel-startup")) app.quit();
 let tray = null;
 
 /** @type {Electron.BrowserWindowConstructorOptions} */
-const DEFAULT_WINDOW_OPTIONS = {
+const WINDOW_OPTIONS = {
   enableLargerThanScreen: false,
+  title: "Clippy",
   center: true,
   icon: path.resolve(__dirname, "./structure.png"),
   webPreferences: {
@@ -46,9 +49,9 @@ const DEFAULT_WINDOW_OPTIONS = {
   },
 };
 
-/** @type {Electron.BrowserWindowConstructorOptions} */
-const DEFAULT_PAGE_OPTIONS = {
-  ...DEFAULT_WINDOW_OPTIONS,
+const ABOUT_OPTIONS = {
+  center: true,
+  icon: WINDOW_OPTIONS.icon,
   width: 600,
   height: 600,
   modal: true,
@@ -56,6 +59,11 @@ const DEFAULT_PAGE_OPTIONS = {
   skipTaskbar: true,
   autoHideMenuBar: true,
   titleBarStyle: "hidden",
+  title: "About",
+  webPreferences: {
+    nodeIntegration: true, // Enables require syntax
+    backgroundThrottling: true, // Throttles background animations and intervals to save power
+  },
 };
 
 /** @type {BrowserWindow} */
@@ -110,7 +118,7 @@ const confirmExit = () => {
 };
 
 /**
- * @param {Event} e
+ * @param {import("electron/main").Event} e
  */
 const handleExit = (e) => {
   e.preventDefault();
@@ -127,7 +135,9 @@ const pingClipboardChanges = () => {
     type === "image" ? clip.readImage().toDataURL() : clip.readText();
 
   const pinging = setInterval(() => {
-    if (mainWindow.isDestroyed()) return clearInterval(pinging);
+    if (mainWindow.isDestroyed()) {
+      return clearInterval(pinging);
+    }
 
     const formats = clipboard.availableFormats();
     const joined = formats.join(",");
@@ -141,7 +151,7 @@ const pingClipboardChanges = () => {
 
       mainWindow.webContents.send(
         CLIPBOARD_EVENT,
-        new Entry({ type, _type, value, _id }),
+        new Entry({ type, _type, value, _id })
       );
     }
   }, 1000);
@@ -209,38 +219,18 @@ ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
 ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
 
-/**
- * @param {Object} config
- * @param {string} config.title
- * @param {Object} config.options
- * @param {string} config.fileUrl
- */
-const createPage = ({ title, options, url }) => {
-  const window = new BrowserWindow({
-    ...options,
-    title,
-  });
-
-  window.loadURL(pathToFileURL(url).href);
-
-  return window;
-};
-
 const createWindow = () => {
   try {
-    mainWindow = createPage({
-      title: "Clippy",
-      options: DEFAULT_WINDOW_OPTIONS,
-      url: path.resolve(__dirname, "./index.html"),
-    });
+    mainWindow = new BrowserWindow(WINDOW_OPTIONS);
 
+    mainWindow.loadURL(pathToFileURL(path.resolve(__dirname, "./index.html")).href);
     mainWindow.maximize();
     mainWindow.on("close", handleExit);
     mainWindow.on("minimize", handleMinimize);
     mainWindow.webContents.on("will-navigate", preventNavigation);
     mainWindow.webContents.on("new-window", externalLinkHandler);
 
-    tray = new Tray(DEFAULT_WINDOW_OPTIONS.icon);
+    tray = new Tray(WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
 
     tray.on("click", maximize);
@@ -258,15 +248,14 @@ const createWindow = () => {
       {
         label: "About",
         click: () => {
-          aboutWindow = createPage({
-            title: "About",
-            url: path.resolve(__dirname, "./about.html"),
-            options: {
-              ...DEFAULT_PAGE_OPTIONS,
-              parent: mainWindow,
-            },
+          aboutWindow = new BrowserWindow({
+            ...ABOUT_OPTIONS,
+            parent: mainWindow,
           });
 
+          aboutWindow.loadURL(
+            pathToFileURL(path.resolve(__dirname, "./about.html")).href
+          );
           aboutWindow.removeMenu();
           aboutWindow.webContents.on("will-navigate", preventNavigation);
           aboutWindow.webContents.on("new-window", aboutLinkHandler);
@@ -288,11 +277,15 @@ app.on("window-all-closed", () => {
   // Quit when all windows are closed.
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
 
 app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
