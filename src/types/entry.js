@@ -33,7 +33,7 @@ module.exports = class Entry {
 
   compareTo(obj2) {
     return !Object.keys(this).some(
-      (key) => this[key] !== obj2[key] && !EXCLUDED.some((k) => key === k)
+      (key) => this[key] !== obj2[key] && !EXCLUDED.some((k) => key === k),
     );
   }
 };
