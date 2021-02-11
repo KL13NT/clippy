@@ -23,18 +23,17 @@ needed one to the point of building one.
 ## Features
 This project is *minimal*. Features include:
 
-- Click to copy back
-- Right Click to delete from log
+- Keeps trach of copied text and images!
+- Copy any entry back
+- Delete entries from the log
+- Pin/Bookmark entries to the top of the list
 - Clear log (can clear system's clipboard as well)
 - Clear system's clipboard only (history untouched)
-- Copy images
-- Open links embedded in copied text
+- Open links embedded in copied text in your system's default browser
 - Copy links embedded in copied text
 - Select and delete multiple entries
 - Select and copy multiple text entries
-
-Yeah.. just those lol 😂 ~~I may add export and link rendering later on, the
-groundwork is almost done so... _maybe_. 🤷~~ Added link rendering!
+- Complete keyboard navigation
 
 ## Getting Started
 

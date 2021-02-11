@@ -1,6 +1,3 @@
-// DISCLAIMER: I wrote this code in a couple hours and this was my first time
-// using Electron, don't @ me 😂
-
 const isDev = require("electron-is-dev");
 const path = require("path");
 const {
