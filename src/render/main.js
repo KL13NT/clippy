@@ -42,7 +42,7 @@ const ListEntry = ({ entry, pin, copy, remove, select }) => {
       data-pinned={entry.pinned}
       style={{ position: "relative", listStyle: "none" }}
       title="Click to copy"
-      onClick={copy}
+      onClickCapture={copy}
       onKeyDown={(e) => e.code === "Enter" && copy(e)}
       tabIndex={0}
       role="menuitem"
@@ -139,6 +139,9 @@ class App extends React.Component {
       });
   };
 
+  /**
+   * Handles clicks outside entries list when selecting
+   */
   handleKeyUpClick = () => {
     if (this.state.selecting)
       this.setState({
@@ -160,8 +163,6 @@ class App extends React.Component {
    * @param {Object} entry
    */
   handleClipboardEvent = (ev, entry) => {
-    // Entry here is gonna be a simple javascript object because electron
-    // serialises IPC messages, so I convert it back
     const { history } = this.state;
 
     // if you really want a performance boost out of this you could
@@ -169,7 +170,7 @@ class App extends React.Component {
     if (!history.some((e) => e.compareTo(entry)))
       this.setState({
         ...this.state,
-        history: [...history, new Entry(entry)],
+        history: [...history, new Entry(entry)], // Convert serialized entry object into Entry again
       });
   };
 
@@ -301,9 +302,6 @@ class App extends React.Component {
     );
   };
 
-  /**
-   * @returns {boolean}
-   */
   isSelecting = () => {
     return this.isSelectingShift() || this.isAnyEntrySelected();
   };
@@ -326,8 +324,6 @@ class App extends React.Component {
 
     const history = Array.from(this.state.history);
     history[index].selected = !history[index].selected;
-
-    ev.stopPropagation();
 
     this.setState({ ...this.state, selecting: true, history }, () =>
       console.log(this.state.history[0].selected),
