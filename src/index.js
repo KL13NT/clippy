@@ -14,12 +14,12 @@ const {
 const { nanoid } = require("nanoid");
 const { pathToFileURL } = require("url");
 
-const Entry = require("./types/entry");
+const Entry = require("./shared/entry");
 const {
   CLIPBOARD_EVENT,
   CLIPBOARD_CLEAR,
   CLIPBOARD_BULK_COPY,
-} = require("./constants");
+} = require("./shared/constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
