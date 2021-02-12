@@ -58,12 +58,11 @@ body {
 #container > ul > li:hover > div.entry-actions,
 #container > ul > li:focus-within > div.entry-actions,
 #container > ul > li:focus > div.entry-actions {
-  visibility: visible;
+  display: flex;
 }
 
 #container > ul > li > div.entry-actions {
-  display: flex;
-  visibility: hidden;
+  display: none;
   position: absolute;
   background: #fff;
   border: solid 1px rgba(0, 0, 0, 0.5);
@@ -73,7 +72,6 @@ body {
   justify-content: space-evenly;
   top: -25px;
   right: 10px;
-  transition: visibility 0.25s;
 }
 
 #container > ul > li > div.entry-actions > button {
