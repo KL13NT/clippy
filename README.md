@@ -10,6 +10,8 @@ Status](https://img.shields.io/github/workflow/status/kl13nt/clippy/release)
 version](https://img.shields.io/github/package-json/v/kl13nt/clippy)
 ![Github All
 Contributors](https://img.shields.io/github/all-contributors/kl13nt/clippy)
+![Codecov](https://img.shields.io/codecov/c/gh/kl13nt/clippy)
+
 
 
 Clippy is a minimal clipboard history log made with
