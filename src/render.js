@@ -1,18 +1,18 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { ipcRenderer } from "electron";
+const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
 const linkifyHTML = require("linkifyjs/html");
 
-import * as Entry from "./types/entry.js";
+const Entry = require("./shared/entry");
 
-import {
+const {
   MESSAGE_CLEAR_BACKEND,
   MESSAGE_CONFIRM_REMOVE,
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
   CLIPBOARD_BULK_COPY,
-} from "./constants";
+} = require("./shared/constants");
 
 function linkify(text, click) {
   return linkifyHTML(text, {
@@ -43,7 +43,7 @@ const ListEntry = ({ entry, pin, copy, remove, select }) => {
       data-pinned={entry.pinned}
       style={{ position: "relative", listStyle: "none" }}
       title="Click to copy"
-      onClickCapture={copy}
+      onClick={copy}
       onKeyDown={(e) => e.code === "Enter" && copy(e)}
       tabIndex={0}
       role="menuitem"
@@ -56,37 +56,34 @@ const ListEntry = ({ entry, pin, copy, remove, select }) => {
 
       <div className="entry-actions" role="menubar">
         <button
-          onClickCapture={remove}
+          onClick={remove}
           aria-label="Delete this entry"
           title="Delete this entry"
         >
-          <img src="../../assets/trash-outline.svg" alt="delete icon" />
+          <img src="../assets/trash-outline.svg" alt="delete icon" />
         </button>
         <button
-          onClickCapture={pin}
+          onClick={pin}
           aria-label="Pin this entry"
           title="Pin this entry"
           data-active={entry.pinned}
         >
-          <img src="../../assets/bookmark-outline.svg" alt="pin icon" />
+          <img src="../assets/bookmark-outline.svg" alt="pin icon" />
         </button>
         <button
-          onClickCapture={copy}
+          onClick={copy}
           aria-label="Copy this entry"
           title="Copy this entry"
         >
-          <img src="../../assets/clipboard-outline.svg" alt="copy icon" />
+          <img src="../assets/clipboard-outline.svg" alt="copy icon" />
         </button>
         <button
-          onClickCapture={select}
+          onClick={select}
           aria-label="Select this entry"
           title="Select this entry"
           data-active={entry.selected}
         >
-          <img
-            src="../../assets/checkmark-square-outline.svg"
-            alt="select icon"
-          />
+          <img src="../assets/checkmark-square-outline.svg" alt="select icon" />
         </button>
       </div>
     </li>
@@ -128,8 +125,10 @@ class App extends Preact.Component {
       // Delete
       else if (this.isSelecting()) this.deleteSelection();
 
-    if (code === "KeyC" && ctrlKey)
-      if (this.isSelecting()) this.copySelectionButtonRef.current.click();
+    if (code === "KeyC" && ctrlKey) {
+      console.log("keyc and ctrl");
+      if (this.isSelecting()) this.copySelection();
+    }
   };
 
   /**
@@ -205,17 +204,17 @@ class App extends Preact.Component {
    * @param {UIEvent} ev
    */
   remove = (ev) => {
+    ev.stopPropagation();
+
     const { _id } = ev.currentTarget.parentNode.parentNode.dataset;
 
     // The pinging on the backend will always signal to display what's currently stored on the clipboard.
     // Leaving the user confused is not part of the deal.
-    if (confirm(MESSAGE_CONFIRM_REMOVE)) {
-      console.log("confirmed");
+    if (confirm(MESSAGE_CONFIRM_REMOVE))
       this.setState({
         ...this.state,
         history: this.state.history.filter((entry) => entry._id !== _id),
       });
-    }
   };
 
   /**
@@ -267,6 +266,7 @@ class App extends Preact.Component {
    * @param {UIEvent} ev
    */
   pin = (ev) => {
+    ev.stopPropagation();
     const { _id } = this.getEntryListItem(ev.currentTarget).dataset;
     const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
 
@@ -322,6 +322,7 @@ class App extends Preact.Component {
    * @param {UIEvent} ev
    */
   select = (ev) => {
+    ev.stopPropagation();
     const { _id } = ev.currentTarget.parentNode.parentNode.dataset;
 
     const index = this.state.history.findIndex((e) => e._id === _id);
@@ -329,14 +330,12 @@ class App extends Preact.Component {
     const history = Array.from(this.state.history);
     history[index].selected = !history[index].selected;
 
-    this.setState({ ...this.state, selecting: true, history }, () =>
-      console.log(this.state.history[0].selected),
-    );
+    this.setState({ ...this.state, selecting: true, history });
   };
 
   render() {
     return (
-      <>
+      <Preact.Fragment>
         <div style={{ display: "flex" }}>
           <button onClick={this.clearHistory}>Clear log</button>
           <button onClick={this.clearClipboard}>Clear clipboard only</button>
@@ -389,7 +388,7 @@ class App extends Preact.Component {
               />
             ))}
         </ul>
-      </>
+      </Preact.Fragment>
     );
   }
 }

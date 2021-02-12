@@ -11,6 +11,17 @@ parserOptions:
   ecmaFeatures:
     jsx: true
 
+  babelOptions:
+    presets:
+      - "@babel/preset-env"
+      - "@babel/preset-react"
+    plugins:
+      - "@babel/plugin-proposal-class-properties"
+      - - "@babel/plugin-proposal-pipeline-operator"
+        - proposal: smart
+      - - "@babel/plugin-transform-runtime"
+        - regenerator: true
+
 env:
   node: true
   browser: true

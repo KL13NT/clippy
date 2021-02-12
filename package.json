@@ -4,15 +4,18 @@
   "version": "1.2.0",
   "description": "Clippy is a minimal clipboard history log made with Electron.js!",
   "main": "src/index.js",
+  "type": "commonjs",
   "scripts": {
     "dev": "npm-run-all -p dev:render dev:forge",
     "dev:forge": "electron-forge start",
-    "dev:render": "npx babel --watch src/render --out-dir ./dist/render",
-    "package": "electron-forge package",
+    "dev:render": "webpack --config ./webpack.renderer.config.js --watch --mode development",
+    "package": "npm-run-all -s build && electron-forge package",
+    "build": "webpack --config ./webpack.renderer.config.js --mode production",
     "make": "electron-forge make",
+    "premake": "npm-run-all -s lint pretty test build",
     "publish": "electron-forge publish",
     "commit": "cz",
-    "precommit": "npm run lint && npm run pretty && npm run test",
+    "precommit": "npm-run-all -s lint pretty test",
     "release": "standard-version",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
@@ -25,7 +28,6 @@
     "name": "Nabil",
     "email": "nabil.tharwat@outlook.com"
   },
-  "license": "GPL-3.0-or-later",
   "build": {
     "appId": "com.kl13nt.clippy",
     "productName": "Clippy",
@@ -42,6 +44,7 @@
       "category": "Utilities"
     }
   },
+  "license": "GPL-3.0-or-later",
   "config": {
     "forge": "./forge.config.js",
     "commitizen": {
@@ -54,18 +57,16 @@
     }
   },
   "dependencies": {
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.0",
-    "babel-preset-react-app": "^3.1.2",
     "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "htm": "^3.0.4",
     "linkifyjs": "^2.1.9",
     "nanoid": "^3.1.20",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "preact": "^10.5.12"
   },
   "devDependencies": {
     "@axe-core/react": "^4.1.1",
+    "@babel/cli": "^7.0.0",
     "@babel/core": "^7.12.13",
     "@babel/eslint-parser": "^7.12.13",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
@@ -80,10 +81,14 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "@electron-forge/plugin-electronegativity": "^6.0.0-beta.54",
     "@electron-forge/publisher-github": "^6.0.0-beta.54",
     "all-contributors-cli": "^6.19.0",
     "babel-jest": "^23.4.2",
+    "babel-loader": "^8.2.2",
     "commitizen": "^4.2.3",
+    "copy-webpack-plugin": "^7.0.0",
+    "css-loader": "^5.0.2",
     "cz-conventional-changelog": "3.3.0",
     "electron": "11.2.0",
     "eslint": "^7.19.0",
@@ -96,10 +101,13 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.22.0",
+    "file-loader": "^6.2.0",
     "husky": "^4.3.8",
     "jest": "^26.6.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
-    "standard-version": "^9.1.0"
+    "standard-version": "^9.1.0",
+    "webpack": "^5.21.2",
+    "webpack-cli": "^4.5.0"
   }
 }
