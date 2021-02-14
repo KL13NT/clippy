@@ -23,7 +23,7 @@ module.exports = {
       config: {
         authors: "Nabil Tharwat @kl13nt",
         description: "Clippy is a minimal clipboard manager",
-        loadingGif: path.resolve(__dirname, "./src/9190_rainbow_hype.gif"),
+        loadingGif: path.resolve(__dirname, "./assets/9190_rainbow_hype.gif"),
         noMsi: false,
       },
     },

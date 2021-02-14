@@ -1,10 +1,10 @@
+/* eslint-disable react/react-in-jsx-scope */
 const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
-const htm = require("htm");
 const linkifyHTML = require("linkifyjs/html");
 
-const Entry = require("./types/entry");
+const Entry = require("./shared/entry");
 
 const {
   MESSAGE_CLEAR_BACKEND,
@@ -12,10 +12,7 @@ const {
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
   CLIPBOARD_BULK_COPY,
-} = require("./constants");
-
-const html = htm.bind(Preact.h);
-const container = document.querySelector("#container");
+} = require("./shared/constants");
 
 function linkify(text, click) {
   return linkifyHTML(text, {
@@ -36,38 +33,70 @@ function linkify(text, click) {
  * @param {Function} param0.pin
  * @param {Function} param0.copy
  * @param {Function} param0.remove
+ * @param {Function} param0.select
  */
-const ListEntry = ({ entry, pin, copy, remove }) => html`<li
-  data-_id=${entry._id}
-  data-selected=${entry.selected}
-  style="position: relative; list-style: none;"
-  title="Click to copy"
-  onClick=${copy}
-  key=${entry._id}
-  onContextMenu=${remove}
->
-  ${entry.type === "image"
-    ? html`<img src=${entry.value} />`
-    : html([linkify(entry.value, copy)])}
+const ListEntry = ({ entry, pin, copy, remove, select }) => {
+  return (
+    <li
+      data-_id={entry._id}
+      data-selected={entry.selected}
+      data-pinned={entry.pinned}
+      style={{ position: "relative", listStyle: "none" }}
+      title="Click to copy"
+      onClick={copy}
+      onKeyDown={(e) => e.code === "Enter" && copy(e)}
+      tabIndex={0}
+      role="menuitem"
+    >
+      {entry.type === "image" ? (
+        <img src={entry.value} alt="Copied from clipboard" />
+      ) : (
+        linkify(entry.value, copy)
+      )}
 
-  <button
-    onClick=${pin}
-    aria-label="Pin this entry"
-    class="pin"
-    title="Pin this entry"
-  >
-    ${entry.pinned
-      ? html`<img src="./push-pinned.svg" alt="pin icon" />`
-      : html`<img src="./push-pin.svg" alt="pin icon" />`}
-  </button>
-</li>`;
+      <div className="entry-actions" role="menubar">
+        <button
+          onClick={remove}
+          aria-label="Delete this entry"
+          title="Delete this entry"
+        >
+          <img src="../assets/trash-outline.svg" alt="delete icon" />
+        </button>
+        <button
+          onClick={pin}
+          aria-label="Pin this entry"
+          title="Pin this entry"
+          data-active={entry.pinned}
+        >
+          <img src="../assets/bookmark-outline.svg" alt="pin icon" />
+        </button>
+        <button
+          onClick={copy}
+          aria-label="Copy this entry"
+          title="Copy this entry"
+        >
+          <img src="../assets/clipboard-outline.svg" alt="copy icon" />
+        </button>
+        <button
+          onClick={select}
+          aria-label="Select this entry"
+          title="Select this entry"
+          data-active={entry.selected}
+        >
+          <img src="../assets/checkmark-square-outline.svg" alt="select icon" />
+        </button>
+      </div>
+    </li>
+  );
+};
 
 class App extends Preact.Component {
   constructor(props) {
     super(props);
     this.state = {
-      /** @type {Entry[]} */
+      /** @type {import('./types/entry')[]} */
       history: [],
+      selectingToggle: false,
       selecting: false,
     };
 
@@ -96,8 +125,10 @@ class App extends Preact.Component {
       // Delete
       else if (this.isSelecting()) this.deleteSelection();
 
-    if (code === "KeyC" && ctrlKey)
-      if (this.isSelecting()) this.copySelectionButtonRef.current.click();
+    if (code === "KeyC" && ctrlKey) {
+      console.log("keyc and ctrl");
+      if (this.isSelecting()) this.copySelection();
+    }
   };
 
   /**
@@ -111,6 +142,9 @@ class App extends Preact.Component {
       });
   };
 
+  /**
+   * Handles clicks outside entries list when selecting
+   */
   handleKeyUpClick = () => {
     if (this.state.selecting)
       this.setState({
@@ -126,9 +160,12 @@ class App extends Preact.Component {
       });
   };
 
+  /**
+   * Handles keyboard polling
+   * @param {Electron.IpcMessageEvent} ev
+   * @param {Object} entry
+   */
   handleClipboardEvent = (ev, entry) => {
-    // Entry here is gonna be a simple javascript object because electron
-    // serialises IPC messages, so I convert it back
     const { history } = this.state;
 
     // if you really want a performance boost out of this you could
@@ -136,7 +173,7 @@ class App extends Preact.Component {
     if (!history.some((e) => e.compareTo(entry)))
       this.setState({
         ...this.state,
-        history: [...history, new Entry(entry)],
+        history: [...history, new Entry(entry)], // Convert serialized entry object into Entry again
       });
   };
 
@@ -164,10 +201,12 @@ class App extends Preact.Component {
   };
 
   /**
-   * @param {UIEvent} param0
+   * @param {UIEvent} ev
    */
-  remove = ({ currentTarget }) => {
-    const { _id } = currentTarget.dataset;
+  remove = (ev) => {
+    ev.stopPropagation();
+
+    const { _id } = ev.currentTarget.parentNode.parentNode.dataset;
 
     // The pinging on the backend will always signal to display what's currently stored on the clipboard.
     // Leaving the user confused is not part of the deal.
@@ -187,46 +226,57 @@ class App extends Preact.Component {
     // Make sure to not copy links and leave their handling to the backend
     if (target.tagName.toLowerCase() !== "a") {
       ev.preventDefault();
-      const { _id } = currentTarget.dataset;
-      const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
+      const { _id } = this.getEntryListItem(currentTarget).dataset;
+      const index = this.state.history.findIndex((e) => e._id === _id);
 
-      if (!this.state.selecting)
-        ipcRenderer.send(CLIPBOARD_EVENT, this.state.history[indexOfEntry]);
+      if (!this.isSelecting())
+        ipcRenderer.send(CLIPBOARD_EVENT, this.state.history[index]);
       else {
         const history = Array.from(this.state.history);
 
-        if (history[indexOfEntry].type !== "text")
+        if (history[index].type !== "text")
           alert("Fatal: Can only bulk copy text entries");
         else {
-          history[indexOfEntry].selected = !history[indexOfEntry].selected;
+          history[index].selected = !history[index].selected;
+
           this.setState({
             ...this.state,
             history,
           });
         }
       }
-    }
 
-    ev.stopPropagation();
+      ev.stopPropagation();
+    }
+  };
+
+  /**
+   *
+   * @param {Element} el
+   */
+  getEntryListItem = (el) => {
+    let parent = el;
+
+    while (parent.tagName !== "LI") parent = parent.parentNode;
+
+    return parent;
   };
 
   /**
    * @param {UIEvent} ev
    */
   pin = (ev) => {
-    const { currentTarget } = ev;
-    const { _id } = currentTarget.parentNode.dataset;
+    ev.stopPropagation();
+    const { _id } = this.getEntryListItem(ev.currentTarget).dataset;
     const indexOfEntry = this.state.history.findIndex((e) => e._id === _id);
-    const history = Array.from(this.state.history);
 
+    const history = Array.from(this.state.history);
     history[indexOfEntry].pinned = !history[indexOfEntry].pinned;
 
     this.setState({
       ...this.history,
       history,
     });
-
-    ev.stopPropagation();
   };
 
   /**
@@ -256,63 +306,92 @@ class App extends Preact.Component {
     );
   };
 
-  /**
-   * @returns {boolean}
-   */
   isSelecting = () => {
-    return this.state.selecting && this.state.history.some((e) => e.selected);
+    return this.isSelectingShift() || this.isAnyEntrySelected();
   };
 
-  render(props, state) {
-    return html`
-      <div style="display: flex">
-        <button onClick=${this.clearHistory}>Clear log</button>
-        <button onClick=${this.clearClipboard}>Clear clipboard only</button>
-        <button
-          onClick=${this.copySelection}
-          disabled=${!this.isSelecting()}
-          ref=${this.copySelectionButtonRef}
-        >
-          Copy selection
-        </button>
-        <button onClick=${this.deleteSelection} disabled=${!this.isSelecting()}>
-          Delete selection
-        </button>
-      </div>
-      <div style="margin: 8px 0">
-        ${state.history.length === 0 && "Free as the wind~"}
-        ${state.history.length === 1 && "There is 1 entry in the clipboard."}
-        ${state.history.length > 1 &&
-        `There are ${state.history.length} entries in the clipboard.`}
-      </div>
-      <ul data-selecting=${this.state.selecting}>
-        ${Array.from(state.history)
-          .filter((e) => e.pinned)
-          .reverse()
-          .map(
-            (entry) =>
-              html`<${ListEntry}
-                entry=${entry}
-                pin=${this.pin}
-                copy=${this.copy}
-                remove=${this.remove}
-              />`,
-          )}
-        ${Array.from(state.history)
-          .filter((e) => !e.pinned)
-          .reverse()
-          .map(
-            (entry) =>
-              html`<${ListEntry}
-                entry=${entry}
-                pin=${this.pin}
-                copy=${this.copy}
-                remove=${this.remove}
-              />`,
-          )}
-      </ul>
-    `;
+  isSelectingShift = () => {
+    return this.state.selecting;
+  };
+
+  isAnyEntrySelected = () => {
+    return this.state.history.some((e) => e.selected);
+  };
+
+  /**
+   * @param {UIEvent} ev
+   */
+  select = (ev) => {
+    ev.stopPropagation();
+    const { _id } = ev.currentTarget.parentNode.parentNode.dataset;
+
+    const index = this.state.history.findIndex((e) => e._id === _id);
+
+    const history = Array.from(this.state.history);
+    history[index].selected = !history[index].selected;
+
+    this.setState({ ...this.state, selecting: true, history });
+  };
+
+  render() {
+    return (
+      <Preact.Fragment>
+        <div style={{ display: "flex" }}>
+          <button onClick={this.clearHistory}>Clear log</button>
+          <button onClick={this.clearClipboard}>Clear clipboard only</button>
+          <button
+            onClick={this.copySelection}
+            disabled={!this.isAnyEntrySelected()}
+          >
+            Copy selection
+          </button>
+          <button
+            onClick={this.deleteSelection}
+            disabled={!this.isAnyEntrySelected()}
+          >
+            Delete selection
+          </button>
+        </div>
+        <div style={{ margin: "8px 0" }}>
+          {this.state.history.length === 0 && "Free as the wind~"}
+          {this.state.history.length === 1 &&
+            "There is 1 entry in the clipboard."}
+          {this.state.history.length > 1 &&
+            `There are ${this.state.history.length} entries in the clipboard.`}
+        </div>
+        <ul data-selecting={this.state.selecting} role="menu">
+          {Array.from(this.state.history)
+            .filter((e) => e.pinned)
+            .reverse()
+            .map((entry) => (
+              <ListEntry
+                key={entry._id}
+                entry={entry}
+                pin={this.pin}
+                copy={this.copy}
+                remove={this.remove}
+                select={this.select}
+              />
+            ))}
+
+          {Array.from(this.state.history)
+            .filter((e) => !e.pinned)
+            .reverse()
+            .map((entry) => (
+              <ListEntry
+                key={entry._id}
+                entry={entry}
+                pin={this.pin}
+                copy={this.copy}
+                remove={this.remove}
+                select={this.select}
+              />
+            ))}
+        </ul>
+      </Preact.Fragment>
+    );
   }
 }
 
-Preact.render(html`<${App} />`, container);
+const container = document.querySelector("#container");
+Preact.render(<App />, container);

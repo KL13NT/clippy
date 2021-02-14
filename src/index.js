@@ -1,6 +1,4 @@
-// DISCLAIMER: I wrote this code in a couple hours and this was my first time
-// using Electron, don't @ me 😂
-
+const isDev = require("electron-is-dev");
 const path = require("path");
 const {
   app,
@@ -16,12 +14,12 @@ const {
 const { nanoid } = require("nanoid");
 const { pathToFileURL } = require("url");
 
-const Entry = require("./types/entry");
+const Entry = require("./shared/entry");
 const {
   CLIPBOARD_EVENT,
   CLIPBOARD_CLEAR,
   CLIPBOARD_BULK_COPY,
-} = require("./constants");
+} = require("./shared/constants");
 
 app.setLoginItemSettings({
   openAtLogin: true,
@@ -39,7 +37,7 @@ let tray = null;
 const DEFAULT_WINDOW_OPTIONS = {
   enableLargerThanScreen: false,
   center: true,
-  icon: path.resolve(__dirname, "./structure.png"),
+  icon: path.resolve(__dirname, "../assets/structure.png"),
   webPreferences: {
     nodeIntegration: true, // Enables require syntax
     backgroundThrottling: true, // Throttles background animations and intervals to save power
@@ -240,9 +238,10 @@ const createWindow = () => {
     mainWindow.webContents.on("will-navigate", preventNavigation);
     mainWindow.webContents.on("new-window", externalLinkHandler);
 
+    if (isDev) mainWindow.webContents.toggleDevTools();
+
     tray = new Tray(DEFAULT_WINDOW_OPTIONS.icon);
     tray.setToolTip("Clippy!");
-
     tray.on("click", maximize);
 
     const trayMenu = Menu.buildFromTemplate([

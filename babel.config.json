@@ -1,19 +1,17 @@
 {
-  "minified": true,
-  "sourceMaps": "both",
-  "presets": ["@babel/preset-env", "@babel/preset-react"],
   "plugins": [
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "pragma": "h",
+        "pragmaFrag": "Fragment"
+      }
+    ],
     "@babel/plugin-proposal-class-properties",
     [
       "@babel/plugin-proposal-pipeline-operator",
       {
         "proposal": "smart"
-      }
-    ],
-    [
-      "@babel/plugin-transform-runtime",
-      {
-        "regenerator": true
       }
     ]
   ]
