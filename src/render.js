@@ -5,7 +5,11 @@ const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
 const { useState, useEffect } = require("preact/hooks");
-const linkifyHTML = require("linkifyjs/html");
+const Linkify = require("linkifyjs/react");
+const SyntaxHighlighter = require("react-syntax-highlighter").default;
+const {
+  atomOneDark,
+} = require("react-syntax-highlighter/dist/esm/styles/hljs");
 
 const Entry = require("./shared/entry");
 
@@ -20,17 +24,27 @@ const {
   UPDATE_APPLY,
 } = require("./shared/constants");
 
-function linkify(text, click) {
-  return linkifyHTML(text, {
-    events: {
-      click,
-    },
-    defaultProtocol: "https",
-    target: {
-      url: "_blank",
-    },
-  });
-}
+// function linkify(text, click) {
+//   return linkifyHTML(text, {
+//     events: {
+//       click,
+//     },
+//     defaultProtocol: "https",
+//     target: {
+//       url: "_blank",
+//     },
+//   });
+// }
+
+const linkifyOptions = (copy) => ({
+  events: {
+    click: copy,
+  },
+  defaultProtocol: "https",
+  target: {
+    url: "_blank",
+  },
+});
 
 /**
  *
@@ -41,12 +55,23 @@ function linkify(text, click) {
  * @param {Function} param0.remove
  * @param {Function} param0.select
  */
-const ListEntry = ({ entry, pin, copy, remove, select }) => {
+const ListEntry = ({ entry, pin, copy, remove, select, setAsCode }) => {
+  const content = entry.code ? (
+    <SyntaxHighlighter style={atomOneDark} wrapLines wrapLongLines>
+      {entry.value.trim()}
+    </SyntaxHighlighter>
+  ) : entry.type === "text" ? (
+    <Linkify options={linkifyOptions(copy)}>{entry.value.trim()}</Linkify>
+  ) : (
+    <img src={entry.value.trim()} alt="Copied from clipboard" />
+  );
+
   return (
     <li
       data-_id={entry._id}
       data-selected={entry.selected}
       data-pinned={entry.pinned}
+      data-code={entry.code}
       style={{ position: "relative", listStyle: "none" }}
       title="Click to copy"
       onClick={copy}
@@ -54,13 +79,17 @@ const ListEntry = ({ entry, pin, copy, remove, select }) => {
       tabIndex={0}
       role="menuitem"
     >
-      {entry.type === "image" ? (
-        <img src={entry.value} alt="Copied from clipboard" />
-      ) : (
-        linkify(entry.value, copy)
-      )}
-
+      {content}
       <div className="entry-actions" role="menubar">
+        <button
+          onClick={setAsCode}
+          aria-label="Display this entry as code"
+          title="Display this entry as code"
+          data-active={entry.code}
+          disabled={!entry._canBeCode}
+        >
+          <img src="../assets/code-outline.svg" alt="code icon" />
+        </button>
         <button
           onClick={remove}
           aria-label="Delete this entry"
@@ -365,6 +394,21 @@ class App extends Preact.Component {
     this.setState({ ...this.state, selecting: true, history });
   };
 
+  /**
+   * @param {UIEvent} ev
+   */
+  setAsCode = (ev) => {
+    ev.stopPropagation();
+    const { _id } = ev.currentTarget.parentNode.parentNode.dataset;
+
+    const index = this.state.history.findIndex((e) => e._id === _id);
+
+    const history = Array.from(this.state.history);
+    history[index].code = !history[index].code;
+
+    this.setState({ ...this.state, history });
+  };
+
   openAboutPage = () => ipcRenderer.send(OPEN_ABOUT_PAGE);
 
   render() {
@@ -411,6 +455,7 @@ class App extends Preact.Component {
               copy={this.copy}
               remove={this.remove}
               select={this.select}
+              setAsCode={this.setAsCode}
             />
           ))}
 
@@ -422,6 +467,7 @@ class App extends Preact.Component {
               copy={this.copy}
               remove={this.remove}
               select={this.select}
+              setAsCode={this.setAsCode}
             />
           ))}
         </ul>
