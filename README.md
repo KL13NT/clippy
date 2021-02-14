@@ -36,6 +36,18 @@ This project is *minimal*. Features include:
 - Complete keyboard navigation
 - Seamlessly download updates in the background and apply then when wanted
 
+## Building From Source
+
+If you'd like to use a custom build from a specific commit do the following:
+1. `git clone https://github.com/KL13NT/clippy.git`
+2. `cd clippy`
+3. `git checkout <commit hash>` without the `<>`
+4. `npm install`
+5. `npm run make`
+
+Make sure to have git, nodejs, and npm installed locally. Note that all commits on master build successfully, so you won't need to change
+anything.
+
 ## Getting Started
 
 This project uses `electron-forge` under the hood, allowing us to develop,

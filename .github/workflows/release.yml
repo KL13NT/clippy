@@ -1,14 +1,15 @@
 name: release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
 
-jobs:  
+jobs:
   codecov:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v1
@@ -17,22 +18,20 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
-      
+
       - name: install dependencies
         run: npm install
 
       - name: ci lint && test
         run: npm run lint && npm run test --ci
-      
+
       - name: send coverage reports to codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-          verbose: true
-          directory: ./docs/coverage 
+          verbose: false
 
-    
   release_linux:
     runs-on: ubuntu-latest
 
@@ -50,7 +49,7 @@ jobs:
 
       - name: install rpm packages
         run: sudo apt-get install rpm
-      
+
       - name: Build/release Electron app
         uses: kl13nt/action-electron-forge@master
         with:
