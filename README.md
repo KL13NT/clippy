@@ -34,6 +34,7 @@ This project is *minimal*. Features include:
 - Select and delete multiple entries
 - Select and copy multiple text entries
 - Complete keyboard navigation
+- Seamlessly download updates in the background and apply then when wanted
 
 ## Getting Started
 

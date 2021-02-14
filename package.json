@@ -10,6 +10,7 @@
     "dev:forge": "electron-forge start",
     "dev:render": "webpack --config ./webpack.renderer.config.js --watch --mode development",
     "package": "npm-run-all -s build && electron-forge package",
+    "prepackage": "npm-run-all -s lint pretty test build",
     "build": "webpack --config ./webpack.renderer.config.js --mode production",
     "make": "electron-forge make",
     "premake": "npm-run-all -s lint pretty test build",
