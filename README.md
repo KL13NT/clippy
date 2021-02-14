@@ -35,6 +35,8 @@ This project is *minimal*. Features include:
 - Select and copy multiple text entries
 - Complete keyboard navigation
 - Seamlessly download updates in the background and apply then when wanted
+- Auto updates
+- Syntax highlighting for code
 
 ## Building From Source
 

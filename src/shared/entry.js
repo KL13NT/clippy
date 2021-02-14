@@ -1,5 +1,5 @@
 const TYPES = ["image", "text"];
-const EXCLUDED = ["pinned", "_id", "selected"]; // excluded from comparison
+const EXCLUDED = ["pinned", "_id", "selected", "code"]; // excluded from comparison
 
 module.exports = class Entry {
   value = "";
@@ -8,6 +8,8 @@ module.exports = class Entry {
   _type = ""; // This is original MIME type
   pinned = false;
   selected = false;
+  code = false;
+  _canBeCode = false;
 
   constructor({
     type,
@@ -16,8 +18,12 @@ module.exports = class Entry {
     _id = null,
     pinned = false,
     selected = false,
+    code = false,
   }) {
     if (!TYPES.includes(type)) throw new Error(`Type must be one of ${TYPES}`);
+    if (type !== "text" && code) throw new Error(`Only text can be code`);
+
+    if (type === "text") this._canBeCode = true;
 
     this.value = value;
     this.type = type;
@@ -25,6 +31,12 @@ module.exports = class Entry {
     this.selected = selected;
     this._type = _type;
     this._id = _id;
+    this.code = code;
+  }
+
+  set code(value = true) {
+    if (this.type !== "text" && value) throw new Error(`Entry is not text`);
+    else this.code = value;
   }
 
   toString() {
