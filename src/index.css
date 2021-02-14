@@ -43,8 +43,18 @@ body {
   transition: border 0.5s;
 }
 
+#container > ul > li > pre {
+  margin: 0 !important;
+  padding: 20px !important;
+  overflow: hidden;
+}
+
 #container > ul > li * {
   max-width: 100%;
+}
+
+#container > ul > li[data-code="true"] {
+  padding: 0;
 }
 
 #container > ul > li[data-selected="true"] {
@@ -62,7 +72,7 @@ body {
 #container > ul > li:hover > div.entry-actions,
 #container > ul > li:focus-within > div.entry-actions,
 #container > ul > li:focus > div.entry-actions {
-  display: flex;
+  display: grid;
 }
 
 #container > ul > li > div.entry-actions {
@@ -71,17 +81,18 @@ body {
   background: #f1f1f1;
   border: solid 1px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
-  width: 160px;
   padding: 5px 10px;
   justify-content: space-evenly;
   top: -25px;
   right: 10px;
+  grid-auto-flow: column;
+  grid-gap: 10px;
 }
 
 #container > ul > li > div.entry-actions > button {
+  margin: 0;
   height: 100%;
   width: 100%;
-  margin: 0;
   padding: 0;
   cursor: pointer;
   background: transparent;
@@ -92,14 +103,13 @@ body {
   outline: none;
 }
 
-#container > ul > li > div.entry-actions > button[data-active="true"],
-#container > ul > li > div.entry-actions > button:active,
-#container > ul > li > div.entry-actions > button:focus {
-  filter: saturate(1);
-  opacity: 1;
+#container > ul > li > div.entry-actions > button[disabled] {
+  opacity: 0.2;
 }
 
-#container > ul > li > div.entry-actions > button[data-active="true"] {
+#container > ul > li > div.entry-actions > button[data-active="true"],
+#container > ul > li > div.entry-actions > button:active:enabled,
+#container > ul > li > div.entry-actions > button:focus:enabled {
   filter: saturate(1);
   opacity: 1;
 }
@@ -109,10 +119,6 @@ body {
   width: 20px;
   margin: 0;
   padding: 0;
-}
-
-#container > ul > li:active {
-  box-shadow: 0 0 1px 2px #04bf047a;
 }
 
 button {
