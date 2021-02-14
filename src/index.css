@@ -1,9 +1,13 @@
+html {
+  background: #f1f1f1;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
     Arial, sans-serif;
   margin: auto;
   max-width: 38rem;
-  padding: 2rem;
+  padding: 4rem 2rem;
 }
 
 * {
@@ -64,7 +68,7 @@ body {
 #container > ul > li > div.entry-actions {
   display: none;
   position: absolute;
-  background: #fff;
+  background: #f1f1f1;
   border: solid 1px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
   width: 160px;
@@ -113,4 +117,40 @@ body {
 
 button {
   margin-right: 6px;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 30px;
+  margin: 0;
+}
+
+.navbar button,
+.navbar span {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  vertical-align: middle;
+}
+.navbar button {
+  cursor: pointer;
+}
+
+.navbar button.update {
+  margin-right: 20px;
+  padding: 0;
+}
+
+.navbar button.update > img {
+  height: 30px;
+  width: 30px;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
 }

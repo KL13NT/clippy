@@ -1,7 +1,10 @@
 /* eslint-disable react/react-in-jsx-scope */
+/** @import * from "./shared/typedefs.js" */
+
 const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
+const { useState, useEffect } = require("preact/hooks");
 const linkifyHTML = require("linkifyjs/html");
 
 const Entry = require("./shared/entry");
@@ -12,6 +15,9 @@ const {
   CLIPBOARD_CLEAR,
   CLIPBOARD_EVENT,
   CLIPBOARD_BULK_COPY,
+  OPEN_ABOUT_PAGE,
+  UPDATE_AVAILABLE,
+  UPDATE_APPLY,
 } = require("./shared/constants");
 
 function linkify(text, click) {
@@ -87,6 +93,32 @@ const ListEntry = ({ entry, pin, copy, remove, select }) => {
         </button>
       </div>
     </li>
+  );
+};
+
+const Updater = () => {
+  const [isUpdateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    ipcRenderer.on(UPDATE_AVAILABLE, () => {
+      setUpdateAvailable(true);
+    });
+  }, []);
+
+  const update = () => {
+    ipcRenderer.send(UPDATE_APPLY);
+  };
+
+  if (!isUpdateAvailable) return null;
+  return (
+    <button
+      aria-label="Download update"
+      title="An update is available!"
+      className="update"
+      onClick={update}
+    >
+      <img src="../assets/cloud-download-outline.svg" alt="Download update" />
+    </button>
   );
 };
 
@@ -333,9 +365,27 @@ class App extends Preact.Component {
     this.setState({ ...this.state, selecting: true, history });
   };
 
+  openAboutPage = () => ipcRenderer.send(OPEN_ABOUT_PAGE);
+
   render() {
+    const { selecting, history } = this.state;
+    const copy = Array.from(history);
+    const pinned = copy.filter((e) => e.pinned).reverse();
+    const nonpinned = copy.filter((e) => !e.pinned).reverse();
+
     return (
       <Preact.Fragment>
+        <nav className="navbar">
+          <button onClick={this.openAboutPage}>About</button>
+          <div>
+            <Updater />
+            <span>
+              {history.length === 0 && "Free as the wind"}
+              {history.length === 1 && "1 Entry"}
+              {history.length > 1 && `${history.length} Entries`}
+            </span>
+          </div>
+        </nav>
         <div style={{ display: "flex" }}>
           <button onClick={this.clearHistory}>Clear log</button>
           <button onClick={this.clearClipboard}>Clear clipboard only</button>
@@ -352,41 +402,28 @@ class App extends Preact.Component {
             Delete selection
           </button>
         </div>
-        <div style={{ margin: "8px 0" }}>
-          {this.state.history.length === 0 && "Free as the wind~"}
-          {this.state.history.length === 1 &&
-            "There is 1 entry in the clipboard."}
-          {this.state.history.length > 1 &&
-            `There are ${this.state.history.length} entries in the clipboard.`}
-        </div>
-        <ul data-selecting={this.state.selecting} role="menu">
-          {Array.from(this.state.history)
-            .filter((e) => e.pinned)
-            .reverse()
-            .map((entry) => (
-              <ListEntry
-                key={entry._id}
-                entry={entry}
-                pin={this.pin}
-                copy={this.copy}
-                remove={this.remove}
-                select={this.select}
-              />
-            ))}
+        <ul data-selecting={selecting} role="menu">
+          {pinned.map((entry) => (
+            <ListEntry
+              key={entry._id}
+              entry={entry}
+              pin={this.pin}
+              copy={this.copy}
+              remove={this.remove}
+              select={this.select}
+            />
+          ))}
 
-          {Array.from(this.state.history)
-            .filter((e) => !e.pinned)
-            .reverse()
-            .map((entry) => (
-              <ListEntry
-                key={entry._id}
-                entry={entry}
-                pin={this.pin}
-                copy={this.copy}
-                remove={this.remove}
-                select={this.select}
-              />
-            ))}
+          {nonpinned.map((entry) => (
+            <ListEntry
+              key={entry._id}
+              entry={entry}
+              pin={this.pin}
+              copy={this.copy}
+              remove={this.remove}
+              select={this.select}
+            />
+          ))}
         </ul>
       </Preact.Fragment>
     );

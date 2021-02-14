@@ -1,3 +1,5 @@
+/** @import * from "./shared/typedefs.js" */
+
 const isDev = require("electron-is-dev");
 const path = require("path");
 const {
@@ -10,6 +12,7 @@ const {
   ipcMain,
   nativeImage,
   Menu,
+  autoUpdater,
 } = require("electron");
 const { nanoid } = require("nanoid");
 const { pathToFileURL } = require("url");
@@ -19,6 +22,10 @@ const {
   CLIPBOARD_EVENT,
   CLIPBOARD_CLEAR,
   CLIPBOARD_BULK_COPY,
+  OPEN_ABOUT_PAGE,
+  AUTO_UPDATE_URL,
+  UPDATE_APPLY,
+  UPDATE_AVAILABLE,
 } = require("./shared/constants");
 
 app.setLoginItemSettings({
@@ -26,12 +33,6 @@ app.setLoginItemSettings({
 });
 
 if (require("electron-squirrel-startup")) app.quit();
-
-/**
- * defining tray globally to avoid GC bug
- * https://www.electronjs.org/docs/faq#my-apps-windowtray-disappeared-after-a-few-minutes
- * @type {Tray} */
-let tray = null;
 
 /** @type {Electron.BrowserWindowConstructorOptions} */
 const DEFAULT_WINDOW_OPTIONS = {
@@ -56,10 +57,17 @@ const DEFAULT_PAGE_OPTIONS = {
   titleBarStyle: "hidden",
 };
 
+/**
+ * defining tray globally to avoid GC bug
+ * https://www.electronjs.org/docs/faq#my-apps-windowtray-disappeared-after-a-few-minutes
+ * @type {Tray} */
+let tray = null;
 /** @type {BrowserWindow} */
 let mainWindow = null;
 /** @type {BrowserWindow} */
 let aboutWindow = null;
+/** @type {UpdateInfo} */
+const updateInfo = null;
 
 const minimize = () => {
   mainWindow.hide();
@@ -203,9 +211,30 @@ const preventNavigation = (e) => {
   e.preventDefault();
 };
 
+const openAboutPage = () => {
+  aboutWindow.show();
+};
+
+const applyUpdate = () => {
+  const { releaseNotes } = updateInfo;
+  const dialogOpts = {
+    type: "info",
+    buttons: ["Restart", "Later"],
+    title: "Application Update",
+    message: releaseNotes,
+    detail:
+      "A new version has been downloaded. Restart the application to apply the updates.",
+  };
+
+  const response = dialog.showMessageBoxSync(dialogOpts);
+  if (response === 0) autoUpdater.quitAndInstall();
+};
+
 ipcMain.handle(CLIPBOARD_CLEAR, clear);
 ipcMain.on(CLIPBOARD_EVENT, handleIPCCopy);
 ipcMain.on(CLIPBOARD_BULK_COPY, handleIPCBulk);
+ipcMain.on(OPEN_ABOUT_PAGE, openAboutPage);
+ipcMain.on(UPDATE_APPLY, applyUpdate);
 
 /**
  * @param {Object} config
@@ -224,6 +253,26 @@ const createPage = ({ title, options, url }) => {
   return window;
 };
 
+const feed = `${AUTO_UPDATE_URL}/update/${
+  process.platform
+}/${app.getVersion()}`;
+
+autoUpdater.setFeedURL(feed);
+
+if (!isDev) {
+  const updateInterval = setInterval(() => {
+    autoUpdater.checkForUpdates();
+  }, 5 * 60 * 1000 /* Every 5 minutes */);
+
+  autoUpdater.on("update-available", () => {
+    clearInterval(updateInterval);
+  });
+
+  autoUpdater.on("update-downloaded", () => {
+    mainWindow.webContents.send(UPDATE_AVAILABLE);
+  });
+}
+
 const createWindow = () => {
   try {
     mainWindow = createPage({
@@ -232,6 +281,7 @@ const createWindow = () => {
       url: path.resolve(__dirname, "./index.html"),
     });
 
+    mainWindow.removeMenu();
     mainWindow.maximize();
     mainWindow.on("close", handleExit);
     mainWindow.on("minimize", handleMinimize);
@@ -253,27 +303,21 @@ const createWindow = () => {
 
     tray.setContextMenu(trayMenu);
 
-    const mainMenu = Menu.buildFromTemplate([
-      {
-        label: "About",
-        click: () => {
-          aboutWindow = createPage({
-            title: "About",
-            url: path.resolve(__dirname, "./about.html"),
-            options: {
-              ...DEFAULT_PAGE_OPTIONS,
-              parent: mainWindow,
-            },
-          });
-
-          aboutWindow.removeMenu();
-          aboutWindow.webContents.on("will-navigate", preventNavigation);
-          aboutWindow.webContents.on("new-window", aboutLinkHandler);
-        },
+    aboutWindow = createPage({
+      title: "About",
+      url: path.resolve(__dirname, "./about.html"),
+      options: {
+        ...DEFAULT_PAGE_OPTIONS,
+        parent: mainWindow,
       },
-    ]);
+    });
 
-    app.applicationMenu = mainMenu;
+    aboutWindow.hide();
+    aboutWindow.removeMenu();
+    aboutWindow.webContents.on("will-navigate", preventNavigation);
+
+    aboutWindow.on("close", (e) => e.preventDefault() || aboutWindow.hide());
+    aboutWindow.webContents.on("new-window", aboutLinkHandler);
 
     pingClipboardChanges();
   } catch (error) {
