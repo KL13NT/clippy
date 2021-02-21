@@ -416,31 +416,45 @@ class App extends Preact.Component {
    * @param {string} input
    */
   filterBy = (input) => {
+    // Helpers
     const unfiltered = () => true;
+    /** @type {string} */
+    const isOfType = (type) => (entry) => entry.type === type;
+    /** @type {string} */
+    const isOfMimeType = (type) => (entry) => entry._type === type;
 
     // No input - return everything
     if (!input) return unfiltered;
 
     // No label - search by text (default)
     if (!input.includes(":"))
-      return (entry) => entry.type === "text" && entry.value.includes(input);
+      return (entry) => isOfType("text")(entry) && entry.value.includes(input);
     else {
       const [label, value] = input
         ?.split(":") // split on ":"
         ?.map((element) => element.trim()); // trim whitespaces
 
-      switch (label) {
-        case "text": {
-          //TODO improve searching
-          return (entry) =>
-            entry.type === "text" && entry.value.includes(value);
-        }
+      if (label === "text")
+        //TODO improve searching
+        return (entry) =>
+          isOfType("text")(entry) && entry.value.includes(value);
 
-        // Provided label did't match any case - return everything
-        default: {
-          return unfiltered;
-        }
+      if (label === "image") {
+        //TODO more MIME types
+        if (value === "image/png")
+          return (entry) =>
+            isOfType("image")(entry) && isOfMimeType("image/png")(entry);
+
+        if (value === "image/jpeg" || value === "image/jpg")
+          return (entry) =>
+            isOfType("image")(entry) && isOfMimeType("image/jpeg")(entry);
+
+        // Provided MIME type did't match any case - return every image
+        return (entry) => isOfType("image")(entry);
       }
+
+      // Provided label did't match any case - return everything
+      return unfiltered;
     }
   };
 
