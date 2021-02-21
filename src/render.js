@@ -159,6 +159,7 @@ class App extends Preact.Component {
       history: [],
       selectingToggle: false,
       selecting: false,
+      search: "",
     };
 
     this.copySelectionButtonRef = Preact.createRef();
@@ -411,9 +412,43 @@ class App extends Preact.Component {
 
   openAboutPage = () => ipcRenderer.send(OPEN_ABOUT_PAGE);
 
+  /**
+   * @param {string} input
+   */
+  filterBy = (input) => {
+    const unfiltered = () => true;
+
+    // No input - return everything
+    if (!input) return unfiltered;
+
+    // No label - search by text (default)
+    if (!input.includes(":"))
+      return (entry) => entry.type === "text" && entry.value.includes(input);
+    else {
+      const [label, value] = input
+        ?.split(":") // split on ":"
+        ?.map((element) => element.trim()); // trim whitespaces
+
+      switch (label) {
+        case "text": {
+          //TODO improve searching
+          return (entry) =>
+            entry.type === "text" && entry.value.includes(value);
+        }
+
+        // Provided label did't match any case - return everything
+        default: {
+          return unfiltered;
+        }
+      }
+    }
+  };
+
   render() {
     const { selecting, history } = this.state;
-    const copy = Array.from(history);
+
+    /** @type Entry[]*/
+    const copy = [...history].filter(this.filterBy(this.state.search));
     const pinned = copy.filter((e) => e.pinned).reverse();
     const nonpinned = copy.filter((e) => !e.pinned).reverse();
 
@@ -445,6 +480,15 @@ class App extends Preact.Component {
           >
             Delete selection
           </button>
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Search for an element"
+            onChange={(e) => {
+              this.setState({ ...this.state, search: e.target.value });
+            }}
+          />
         </div>
         <ul data-selecting={selecting} role="menu">
           {pinned.map((entry) => (
