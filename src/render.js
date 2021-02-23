@@ -441,7 +441,8 @@ class App extends Preact.Component {
 
       if (label === "image")
         return (entry) =>
-          isOfType("image")(entry) && isOfMimeType(value)(entry);
+          isOfType("image")(entry) &&
+          (isOfMimeType(value)(entry) || isOfMimeType(`image/${value}`)(entry));
 
       // Provided label did't match any case - return everything
       return unfiltered;
