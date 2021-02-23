@@ -412,10 +412,9 @@ class App extends Preact.Component {
 
   openAboutPage = () => ipcRenderer.send(OPEN_ABOUT_PAGE);
 
-  /**
-   * @param {string} input
-   */
-  filterBy = (input) => {
+  getSearchFilter = () => {
+    const { search } = this.state;
+
     // Helpers
     const unfiltered = () => true;
     /** @type {string} */
@@ -424,34 +423,25 @@ class App extends Preact.Component {
     const isOfMimeType = (type) => (entry) => entry._type === type;
 
     // No input - return everything
-    if (!input) return unfiltered;
+    if (!search) return unfiltered;
 
     // No label - search by text (default)
-    if (!input.includes(":"))
-      return (entry) => isOfType("text")(entry) && entry.value.includes(input);
+    if (!search.includes(":"))
+      return (entry) => isOfType("text")(entry) && entry.value.includes(search);
     else {
-      const [label, value] = input
-        ?.split(":") // split on ":"
-        ?.map((element) => element.trim()); // trim whitespaces
+      // Splitting the string on ":" to get label and value (search = label: value)
+      const [label, value] = search
+        ?.split(":")
+        ?.map((element) => element.trim());
 
       if (label === "text")
         //TODO improve searching
         return (entry) =>
           isOfType("text")(entry) && entry.value.includes(value);
 
-      if (label === "image") {
-        //TODO more MIME types
-        if (value === "image/png")
-          return (entry) =>
-            isOfType("image")(entry) && isOfMimeType("image/png")(entry);
-
-        if (value === "image/jpeg" || value === "image/jpg")
-          return (entry) =>
-            isOfType("image")(entry) && isOfMimeType("image/jpeg")(entry);
-
-        // Provided MIME type did't match any case - return every image
-        return (entry) => isOfType("image")(entry);
-      }
+      if (label === "image")
+        return (entry) =>
+          isOfType("image")(entry) && isOfMimeType(value)(entry);
 
       // Provided label did't match any case - return everything
       return unfiltered;
@@ -462,7 +452,7 @@ class App extends Preact.Component {
     const { selecting, history } = this.state;
 
     /** @type Entry[]*/
-    const copy = [...history].filter(this.filterBy(this.state.search));
+    const copy = history.filter(this.getSearchFilter());
     const pinned = copy.filter((e) => e.pinned).reverse();
     const nonpinned = copy.filter((e) => !e.pinned).reverse();
 
@@ -499,9 +489,10 @@ class App extends Preact.Component {
           <input
             type="text"
             placeholder="Search for an element"
-            onChange={(e) => {
-              this.setState({ ...this.state, search: e.target.value });
-            }}
+            value={this.state.search}
+            onChange={(e) =>
+              this.setState({ ...this.state, search: e.target.value })
+            }
           />
         </div>
         <ul data-selecting={selecting} role="menu">
