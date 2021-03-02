@@ -39,6 +39,24 @@ This project is _minimal_. Features include:
 - Auto updates
 - Syntax highlighting for code
 
+## Frequently Asked Questions
+
+### How do I use search?
+
+You can be specific about what you want to search, typing:
+
+- `image: png` to search for PNG images
+
+- `image: jpeg` to search for JPEG images
+
+- `image: <any valid image MIME subtype>` to search for other formats
+
+- `text: <some text>` to search for text
+
+Or just type text directly!
+
+> See MIME types for images [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#image_types)
+
 ## Building From Source
 
 If you'd like to use a custom build from a specific commit do the following:
