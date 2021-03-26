@@ -41,6 +41,14 @@ This project is _minimal_. Features include:
 
 ## Frequently Asked Questions
 
+### Versioning
+
+To bump the package version use `npm version` as found in the NPM
+[documentation](https://docs.npmjs.com/cli/v7/commands/npm-version). I recommend
+using a signed commit message as well by running `npm version patch -s -m
+"chore(release) %s"`.
+
+
 ### How do I use search?
 
 You can be specific about what you want to search, typing:
