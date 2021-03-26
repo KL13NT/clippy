@@ -1,7 +1,7 @@
 {
   "name": "clippy",
   "productName": "clippy",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Clippy is a minimal clipboard history log made with Electron.js!",
   "main": "src/index.js",
   "type": "commonjs",
