@@ -271,6 +271,11 @@ if (!isDev) {
   autoUpdater.on("update-downloaded", () => {
     mainWindow.webContents.send(UPDATE_AVAILABLE);
   });
+
+  autoUpdater.on("error", (message) => {
+    console.error("There was a problem updating the application");
+    console.error(message);
+  });
 }
 
 const createWindow = () => {
