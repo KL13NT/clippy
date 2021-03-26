@@ -64,6 +64,7 @@
     "linkifyjs": "^2.1.9",
     "nanoid": "^3.1.20",
     "preact": "^10.5.12",
+    "react-markdown": "^5.0.3",
     "react-syntax-highlighter": "^15.4.3"
   },
   "devDependencies": {

@@ -4,12 +4,14 @@
 const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
-const { useState, useEffect } = require("preact/hooks");
+const ReactMarkdown = require("react-markdown");
 const Linkify = require("linkifyjs/react");
 const SyntaxHighlighter = require("react-syntax-highlighter").default;
 const {
   atomOneDark,
 } = require("react-syntax-highlighter/dist/esm/styles/hljs");
+
+const { useState, useEffect } = require("preact/hooks");
 
 const Entry = require("./shared/entry");
 
@@ -23,18 +25,6 @@ const {
   UPDATE_AVAILABLE,
   UPDATE_APPLY,
 } = require("./shared/constants");
-
-// function linkify(text, click) {
-//   return linkifyHTML(text, {
-//     events: {
-//       click,
-//     },
-//     defaultProtocol: "https",
-//     target: {
-//       url: "_blank",
-//     },
-//   });
-// }
 
 const linkifyOptions = (copy) => ({
   events: {
@@ -150,6 +140,22 @@ const Updater = () => {
     </button>
   );
 };
+
+const searchTutorial = `
+\`image: png\` to search for PNG images
+
+\`image: webp\` to search for WEBP images
+
+\`image: jpeg\` to search for JPEG images
+
+\`image: <any valid image MIME subtype>\` to search for other formats
+
+\`text: some text\` to search for text
+
+Or just type text directly!`;
+
+// eslint-disable-next-line react/no-children-prop
+const SearchTutorial = () => <ReactMarkdown children={searchTutorial} />;
 
 class App extends Preact.Component {
   constructor(props) {
@@ -461,6 +467,19 @@ class App extends Preact.Component {
       <Preact.Fragment>
         <nav className="navbar">
           <button onClick={this.openAboutPage}>About</button>
+          <div id="search">
+            <input
+              type="text"
+              placeholder="Search for an element with text:lorem or image:png"
+              value={this.state.search}
+              onChange={(e) =>
+                this.setState({ ...this.state, search: e.target.value })
+              }
+            />
+            <div id="search-tutorial">
+              <SearchTutorial />
+            </div>
+          </div>
           <div>
             <Updater />
             <span>
@@ -485,16 +504,6 @@ class App extends Preact.Component {
           >
             Delete selection
           </button>
-        </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Search for an element"
-            value={this.state.search}
-            onChange={(e) =>
-              this.setState({ ...this.state, search: e.target.value })
-            }
-          />
         </div>
         <ul data-selecting={selecting} role="menu">
           {pinned.map((entry) => (
