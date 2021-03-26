@@ -11,7 +11,6 @@ version](https://img.shields.io/github/package-json/v/kl13nt/clippy)
 ![Github All
 Contributors](https://img.shields.io/github/all-contributors/kl13nt/clippy)
 
-
 Clippy is a minimal clipboard history log made with
 [Electron](https://electronjs.org), [Preact](https://preactjs.com), and
 [htm](https://github.com/developit/htm). It doesn't store nor sync your
@@ -21,9 +20,11 @@ needed one to the point of building one.
 > Some of my projects are available on my [projects page](https://iamnabil.netlify.app/projects).
 
 ## Features
-This project is *minimal*. Features include:
 
-- Keeps trach of copied text and images!
+This project is _minimal_. Features include:
+
+- Keeps track of copied text and images!
+- Search entries by text or image using labels
 - Copy any entry back
 - Delete entries from the log
 - Pin/Bookmark entries to the top of the list
@@ -38,9 +39,28 @@ This project is *minimal*. Features include:
 - Auto updates
 - Syntax highlighting for code
 
+## Frequently Asked Questions
+
+### How do I use search?
+
+You can be specific about what you want to search, typing:
+
+- `image: png` to search for PNG images
+
+- `image: jpeg` to search for JPEG images
+
+- `image: <any valid image MIME subtype>` to search for other formats
+
+- `text: <some text>` to search for text
+
+Or just type text directly!
+
+> See MIME types for images [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#image_types)
+
 ## Building From Source
 
 If you'd like to use a custom build from a specific commit do the following:
+
 1. `git clone https://github.com/KL13NT/clippy.git`
 2. `cd clippy`
 3. `git checkout <commit hash>` without the `<>`
@@ -71,7 +91,7 @@ For the reasoning behind this see issue [#39](https://github.com/KL13NT/clippy/i
 > Make sure to [sign](https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification) your commits. This guarantees ownership of your contributions.
 
 To developer or build locally you first need to install the dependencies. We use
-*npm* for this.
+_npm_ for this.
 
 ```
 npm install
@@ -87,6 +107,7 @@ npm run dev
 ```
 
 ### Building
+
 You can build from source using the `make` command. Building for a target OS requires
 that respective OS. You probably won't need to run this unless you're on the
 core team.
@@ -109,6 +130,7 @@ I'm open to all kinds of contributions. If you want to:
 You are more than welcome. Before contributing, kindly check the [guidelines](./CONTRIBUTING.md).
 
 ## License
+
 This projects is licensed under the GNU GPLv3 License.
 
 ## Contributors ✨

@@ -159,6 +159,7 @@ class App extends Preact.Component {
       history: [],
       selectingToggle: false,
       selecting: false,
+      search: "",
     };
 
     this.copySelectionButtonRef = Preact.createRef();
@@ -411,9 +412,48 @@ class App extends Preact.Component {
 
   openAboutPage = () => ipcRenderer.send(OPEN_ABOUT_PAGE);
 
+  getSearchFilter = () => {
+    const { search } = this.state;
+
+    // Helpers
+    const unfiltered = () => true;
+    /** @type {string} */
+    const isOfType = (type) => (entry) => entry.type === type;
+    /** @type {string} */
+    const isOfMimeType = (type) => (entry) => entry._type === type;
+
+    // No input - return everything
+    if (!search) return unfiltered;
+
+    // No label - search by text (default)
+    if (!search.includes(":"))
+      return (entry) => isOfType("text")(entry) && entry.value.includes(search);
+    else {
+      // Splitting the string on ":" to get label and value (search = label: value)
+      const [label, value] = search
+        ?.split(":")
+        ?.map((element) => element.trim());
+
+      if (label === "text")
+        //TODO improve searching
+        return (entry) =>
+          isOfType("text")(entry) && entry.value.includes(value);
+
+      if (label === "image")
+        return (entry) =>
+          isOfType("image")(entry) &&
+          (isOfMimeType(value)(entry) || isOfMimeType(`image/${value}`)(entry));
+
+      // Provided label did't match any case - return everything
+      return unfiltered;
+    }
+  };
+
   render() {
     const { selecting, history } = this.state;
-    const copy = Array.from(history);
+
+    /** @type Entry[]*/
+    const copy = history.filter(this.getSearchFilter());
     const pinned = copy.filter((e) => e.pinned).reverse();
     const nonpinned = copy.filter((e) => !e.pinned).reverse();
 
@@ -445,6 +485,16 @@ class App extends Preact.Component {
           >
             Delete selection
           </button>
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Search for an element"
+            value={this.state.search}
+            onChange={(e) =>
+              this.setState({ ...this.state, search: e.target.value })
+            }
+          />
         </div>
         <ul data-selecting={selecting} role="menu">
           {pinned.map((entry) => (
