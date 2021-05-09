@@ -5,6 +5,7 @@ const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
 const ReactMarkdown = require("react-markdown");
+const SelectionArea = require("@simonwep/selection-js/lib/selection.min");
 const Linkify = require("linkifyjs/react");
 const SyntaxHighlighter = require("react-syntax-highlighter").default;
 const {
@@ -169,6 +170,27 @@ class App extends Preact.Component {
     };
 
     this.copySelectionButtonRef = Preact.createRef();
+
+    this.selection = new SelectionArea({
+      document: window.document,
+      class: "selection-area",
+      container: "ul[role='menu']",
+      selectables: ["li[role='menuitem']"],
+      startareas: ["html"],
+      boundaries: ["body"],
+      startThreshold: 10,
+      allowTouch: true,
+      intersect: "touch",
+      overlap: "invert",
+      singleTap: {
+        allow: true,
+        intersect: "native",
+      },
+      scrolling: {
+        speedDivider: 10,
+        manualSpeed: 750,
+      },
+    });
   }
 
   /**
