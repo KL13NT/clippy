@@ -8,6 +8,7 @@ body {
   margin: auto;
   max-width: 38rem;
   padding: 4rem 2rem;
+  min-height: 100vh;
 }
 
 * {
