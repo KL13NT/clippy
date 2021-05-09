@@ -191,15 +191,13 @@ class App extends Preact.Component {
         manualSpeed: 750,
       },
     })
-      .on("beforestart", () => {
+      .on("beforestart", ({ event }) => {
         const entries = this.state.history.filter(this.getSearchFilter());
 
         /* There are no entries in history
          no need for allowing selection, return false */
         if (entries.length === 0) return false;
-      })
-      .on("start", () => {
-        selection.clearSelection();
+        if (!event.shiftKey) return false;
       })
       .on("move", ({ store }) => {
         const { changed } = store;
