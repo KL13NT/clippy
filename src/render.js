@@ -171,14 +171,14 @@ class App extends Preact.Component {
 
     this.copySelectionButtonRef = Preact.createRef();
 
-    this.selection = new SelectionArea({
+    const selection = new SelectionArea({
       document: window.document,
       class: "selection-area",
       container: "ul[role='menu']",
       selectables: ["li[role='menuitem']"],
       startareas: ["html"],
       boundaries: ["body"],
-      startThreshold: 10,
+      startThreshold: 20,
       allowTouch: true,
       intersect: "touch",
       overlap: "invert",
@@ -190,7 +190,46 @@ class App extends Preact.Component {
         speedDivider: 10,
         manualSpeed: 750,
       },
-    });
+    })
+      .on("beforestart", () => {
+        const entries = this.state.history.filter(this.getSearchFilter());
+
+        /* There are no entries in history
+         no need for allowing selection, return false */
+        if (entries.length === 0) return false;
+      })
+      .on("start", () => {
+        selection.clearSelection();
+      })
+      .on("move", ({ store }) => {
+        const { changed } = store;
+        if (changed.added.length === 0 && changed.removed.length === 0) return;
+
+        for (const entry of changed.added) {
+          const { _id } = entry.dataset;
+
+          const index = this.state.history.findIndex((e) => e._id === _id);
+
+          const history = Array.from(this.state.history);
+          history[index].selected = true;
+
+          this.setState({ ...this.state, history });
+        }
+
+        for (const entry of changed.removed) {
+          const { _id } = entry.dataset;
+
+          const index = this.state.history.findIndex((e) => e._id === _id);
+
+          const history = Array.from(this.state.history);
+          history[index].selected = false;
+
+          this.setState({ ...this.state, history });
+        }
+      })
+      .on("stop", () => {
+        selection.keepSelection();
+      });
   }
 
   /**
