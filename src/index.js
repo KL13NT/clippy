@@ -314,10 +314,11 @@ const createWindow = () => {
       options: {
         ...DEFAULT_PAGE_OPTIONS,
         parent: mainWindow,
+        show: true,
       },
     });
 
-    aboutWindow.hide();
+    // aboutWindow.hide();
     aboutWindow.removeMenu();
     aboutWindow.webContents.on("will-navigate", preventNavigation);
 

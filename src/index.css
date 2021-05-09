@@ -12,6 +12,7 @@ body {
 
 * {
   box-sizing: border-box;
+  user-select: none;
 }
 
 #container > ul {
@@ -238,4 +239,10 @@ button {
 
 .navbar #search:focus-within #search-tutorial {
   display: block;
+}
+
+.selection-area {
+  background: transparent;
+  border: 2px solid #8133ff;
+  border-radius: 0.15em;
 }
