@@ -175,10 +175,10 @@ class App extends Preact.Component {
       document: window.document,
       class: "selection-area",
       container: "ul[role='menu']",
-      selectables: ["li[role='menuitem']"],
+      selectables: ["ul[role='menu'] > li[role='menuitem']"],
       startareas: ["html"],
       boundaries: ["body"],
-      startThreshold: 20,
+      startThreshold: 0,
       allowTouch: true,
       intersect: "touch",
       overlap: "invert",
@@ -198,6 +198,16 @@ class App extends Preact.Component {
          no need for allowing selection, return false */
         if (entries.length === 0) return false;
         if (!event.shiftKey) return false;
+      })
+      .on("start", () => {
+        // Clear all previously selected items
+        selection.clearSelection();
+        this.setState({
+          ...this.state,
+          history: this.state.history.map((el) => ({ ...el, selected: false })),
+          // Selection starts
+          selecting: true,
+        });
       })
       .on("move", ({ store }) => {
         const { changed } = store;
@@ -226,7 +236,7 @@ class App extends Preact.Component {
         }
       })
       .on("stop", () => {
-        selection.keepSelection();
+        this.setState({ ...this.state, selecting: false });
       });
   }
 
