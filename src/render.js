@@ -197,7 +197,7 @@ class App extends Preact.Component {
         /* There are no entries in history
          no need for allowing selection, return false */
         if (entries.length === 0) return false;
-        if (!event.shiftKey) return false;
+        if (event.shiftKey) return false;
       })
       .on("start", () => {
         // Clear all previously selected items
