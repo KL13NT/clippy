@@ -204,7 +204,13 @@ class App extends Preact.Component {
         selection.clearSelection();
         this.setState({
           ...this.state,
-          history: this.state.history.map((el) => ({ ...el, selected: false })),
+          history: this.state.history.map(
+            (entry) =>
+              new Entry({
+                ...entry,
+                selected: false,
+              }),
+          ),
           // Selection starts
           selecting: true,
         });
