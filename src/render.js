@@ -198,6 +198,8 @@ class App extends Preact.Component {
          no need for allowing selection, return false */
         if (entries.length === 0) return false;
         if (event.shiftKey) return false;
+
+        document.body.style.userSelect = "none";
       })
       .on("start", () => {
         // Clear all previously selected items
@@ -243,6 +245,8 @@ class App extends Preact.Component {
       })
       .on("stop", () => {
         this.setState({ ...this.state, selecting: false });
+
+        document.body.style.userSelect = "unset";
       });
   }
 
