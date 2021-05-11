@@ -177,7 +177,7 @@ class App extends Preact.Component {
       container: "ul[role='menu']",
       selectables: ["ul[role='menu'] > li[role='menuitem']"],
       startareas: ["html"],
-      boundaries: ["body"],
+      boundaries: ["html"],
       startThreshold: 0,
       allowTouch: true,
       intersect: "touch",
