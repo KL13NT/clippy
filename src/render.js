@@ -217,28 +217,16 @@ class App extends Preact.Component {
           selecting: true,
         });
       })
-      .on("move", ({ store }) => {
-        const { changed } = store;
+      .on("move", ({ store: changed }) => {
         if (changed.added.length === 0 && changed.removed.length === 0) return;
 
-        for (const entry of changed.added) {
+        for (const entry of [...changed.added, ...changed.removed]) {
           const { _id } = entry.dataset;
 
           const index = this.state.history.findIndex((e) => e._id === _id);
 
           const history = Array.from(this.state.history);
-          history[index].selected = true;
-
-          this.setState({ ...this.state, history });
-        }
-
-        for (const entry of changed.removed) {
-          const { _id } = entry.dataset;
-
-          const index = this.state.history.findIndex((e) => e._id === _id);
-
-          const history = Array.from(this.state.history);
-          history[index].selected = false;
+          history[index].selected = !history[index].selected;
 
           this.setState({ ...this.state, history });
         }
@@ -272,10 +260,8 @@ class App extends Preact.Component {
       // Delete
       else if (this.isSelecting()) this.deleteSelection();
 
-    if (code === "KeyC" && ctrlKey) {
-      console.log("keyc and ctrl");
+    if (code === "KeyC" && ctrlKey)
       if (this.isSelecting()) this.copySelection();
-    }
   };
 
   /**
