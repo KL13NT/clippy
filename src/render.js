@@ -217,7 +217,7 @@ class App extends Preact.Component {
           selecting: true,
         });
       })
-      .on("move", ({ store: changed }) => {
+      .on("move", ({ store: { changed } }) => {
         if (changed.added.length === 0 && changed.removed.length === 0) return;
 
         for (const entry of [...changed.added, ...changed.removed]) {
