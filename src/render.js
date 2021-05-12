@@ -191,13 +191,13 @@ class App extends Preact.Component {
         manualSpeed: 750,
       },
     })
-      .on("beforestart", ({ event }) => {
+      .on("beforestart", ({ event: { shiftKey: withShiftKey } }) => {
         const entries = this.state.history.filter(this.getSearchFilter());
 
         /* There are no entries in history
          no need for allowing selection, return false */
         if (entries.length === 0) return false;
-        if (event.shiftKey) return false;
+        if (withShiftKey) return false;
 
         document.body.style.userSelect = "none";
       })
@@ -217,20 +217,28 @@ class App extends Preact.Component {
           selecting: true,
         });
       })
-      .on("move", ({ store: { changed } }) => {
-        if (changed.added.length === 0 && changed.removed.length === 0) return;
+      .on(
+        "move",
+        ({
+          store: {
+            changed: { added: selectedEntries, removed: unselectedEntries },
+          },
+        }) => {
+          if (selectedEntries.length === 0 && unselectedEntries.length === 0)
+            return;
 
-        for (const entry of [...changed.added, ...changed.removed]) {
-          const { _id } = entry.dataset;
+          for (const entry of [selectedEntries, unselectedEntries].flat()) {
+            const { _id } = entry.dataset;
 
-          const index = this.state.history.findIndex((e) => e._id === _id);
+            const index = this.state.history.findIndex((e) => e._id === _id);
 
-          const history = Array.from(this.state.history);
-          history[index].selected = !history[index].selected;
+            const history = Array.from(this.state.history);
+            history[index].selected = !history[index].selected;
 
-          this.setState({ ...this.state, history });
-        }
-      })
+            this.setState({ ...this.state, history });
+          }
+        },
+      )
       .on("stop", () => {
         this.setState({ ...this.state, selecting: false });
 
