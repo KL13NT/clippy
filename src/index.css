@@ -8,6 +8,7 @@ body {
   margin: auto;
   max-width: 38rem;
   padding: 4rem 2rem;
+  min-height: 100vh;
 }
 
 * {
@@ -238,4 +239,8 @@ button {
 
 .navbar #search:focus-within #search-tutorial {
   display: block;
+}
+
+.selection-area {
+  background: rgba(129, 51, 255, 0.5);
 }

@@ -5,6 +5,7 @@ const { ipcRenderer } = require("electron");
 
 const Preact = require("preact");
 const ReactMarkdown = require("react-markdown");
+const SelectionArea = require("@simonwep/selection-js/lib/selection.min");
 const Linkify = require("linkifyjs/react");
 const SyntaxHighlighter = require("react-syntax-highlighter").default;
 const {
@@ -169,6 +170,90 @@ class App extends Preact.Component {
     };
 
     this.copySelectionButtonRef = Preact.createRef();
+
+    const selection = new SelectionArea({
+      document: window.document,
+      class: "selection-area",
+      container: "ul[role='menu']",
+      selectables: ["ul[role='menu'] > li[role='menuitem']"],
+      startareas: ["html"],
+      boundaries: ["html"],
+      startThreshold: 0,
+      allowTouch: true,
+      intersect: "touch",
+      overlap: "invert",
+      singleTap: {
+        allow: true,
+        intersect: "native",
+      },
+      scrolling: {
+        speedDivider: 10,
+        manualSpeed: 750,
+      },
+    })
+      .on(
+        "beforestart",
+        ({ event: { shiftKey: withShiftKey, path: elementPath } }) => {
+          const entries = this.state.history.filter(this.getSearchFilter());
+
+          /* There are no entries in history
+         no need for allowing selection, return false */
+          if (entries.length === 0) return false;
+          if (!withShiftKey) return false;
+
+          if (
+            elementPath.find((element) => {
+              return element.id === "entries" && element.localName === "ul";
+            })
+          )
+            return false;
+
+          document.body.style.userSelect = "none";
+        },
+      )
+      .on("start", () => {
+        // Clear all previously selected items
+        selection.clearSelection();
+        this.setState({
+          ...this.state,
+          history: this.state.history.map(
+            (entry) =>
+              new Entry({
+                ...entry,
+                selected: false,
+              }),
+          ),
+          // Selection starts
+          selecting: true,
+        });
+      })
+      .on(
+        "move",
+        ({
+          store: {
+            changed: { added: selectedEntries, removed: unselectedEntries },
+          },
+        }) => {
+          if (selectedEntries.length === 0 && unselectedEntries.length === 0)
+            return;
+
+          for (const entry of [selectedEntries, unselectedEntries].flat()) {
+            const { _id } = entry.dataset;
+
+            const index = this.state.history.findIndex((e) => e._id === _id);
+
+            const history = Array.from(this.state.history);
+            history[index].selected = !history[index].selected;
+
+            this.setState({ ...this.state, history });
+          }
+        },
+      )
+      .on("stop", () => {
+        this.setState({ ...this.state, selecting: false });
+
+        document.body.style.userSelect = "unset";
+      });
   }
 
   /**
@@ -193,10 +278,8 @@ class App extends Preact.Component {
       // Delete
       else if (this.isSelecting()) this.deleteSelection();
 
-    if (code === "KeyC" && ctrlKey) {
-      console.log("keyc and ctrl");
+    if (code === "KeyC" && ctrlKey)
       if (this.isSelecting()) this.copySelection();
-    }
   };
 
   /**
@@ -505,7 +588,7 @@ class App extends Preact.Component {
             Delete selection
           </button>
         </div>
-        <ul data-selecting={selecting} role="menu">
+        <ul data-selecting={selecting} role="menu" id="entries">
           {pinned.map((entry) => (
             <ListEntry
               key={entry._id}
