@@ -191,16 +191,26 @@ class App extends Preact.Component {
         manualSpeed: 750,
       },
     })
-      .on("beforestart", ({ event: { shiftKey: withShiftKey } }) => {
-        const entries = this.state.history.filter(this.getSearchFilter());
+      .on(
+        "beforestart",
+        ({ event: { shiftKey: withShiftKey, path: elementPath } }) => {
+          const entries = this.state.history.filter(this.getSearchFilter());
 
-        /* There are no entries in history
+          /* There are no entries in history
          no need for allowing selection, return false */
-        if (entries.length === 0) return false;
-        if (withShiftKey) return false;
+          if (entries.length === 0) return false;
+          if (!withShiftKey) return false;
 
-        document.body.style.userSelect = "none";
-      })
+          if (
+            elementPath.find((element) => {
+              return element.id === "entries" && element.localName === "ul";
+            })
+          )
+            return false;
+
+          document.body.style.userSelect = "none";
+        },
+      )
       .on("start", () => {
         // Clear all previously selected items
         selection.clearSelection();
@@ -578,7 +588,7 @@ class App extends Preact.Component {
             Delete selection
           </button>
         </div>
-        <ul data-selecting={selecting} role="menu">
+        <ul data-selecting={selecting} role="menu" id="entries">
           {pinned.map((entry) => (
             <ListEntry
               key={entry._id}
